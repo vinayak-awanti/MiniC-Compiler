@@ -1,12 +1,13 @@
 #include "st.h"
 int size=0;
-
 sym_t symbol_table;
 
+
 void load_token(char *key,char *val){
-	strcpy(symbol_table.tokens[size].key,key);
-	strcpy(symbol_table.tokens[size].value,val);
-	size+=1;
+	printf("%s",key);
+//	strcpy(symbol_table.tokens[size].key,key);
+	//strcpy(symbol_table.tokens[size].value,val);
+	//size+=1;
 
 }
 int fetch_token(char *key){

@@ -530,16 +530,16 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    17,    17,    19,    20,    22,    23,    24,    26,    28,
-      30,    35,    36,    38,    39,    41,    42,    43,    44,    46,
-      47,    48,    50,    51,    52,    53,    54,    55,    56,    57,
-      58,    60,    62,    63,    65,    67,    69,    71,    72,    74,
-      75,    77,    78,    80,    81,    83,    84,    85,    87,    89,
-      90,    91,    92,    93,    94,    95,    96,    98,    99,   101,
-     102,   104,   105,   107,   108,   110,   111,   112,   113,   114,
-     115,   117,   118,   120,   121,   123,   124,   126,   127,   128,
-     130,   131,   133,   134,   136,   137,   139,   140,   141,   143,
-     144,   146,   147,   148,   149
+       0,    18,    18,    20,    21,    23,    24,    25,    27,    29,
+      31,    39,    40,    42,    43,    45,    46,    47,    48,    50,
+      51,    52,    54,    55,    56,    57,    58,    59,    60,    61,
+      62,    64,    66,    67,    69,    71,    73,    75,    76,    78,
+      79,    81,    82,    84,    85,    87,    88,    89,    91,    93,
+      94,    95,    96,    97,    98,    99,   100,   102,   103,   105,
+     106,   108,   109,   111,   112,   114,   115,   116,   117,   118,
+     119,   121,   122,   124,   125,   127,   128,   130,   131,   132,
+     134,   135,   137,   138,   140,   141,   143,   144,   145,   147,
+     148,   150,   151,   152,   153
 };
 #endif
 
@@ -1430,15 +1430,18 @@ yyreduce:
   switch (yyn)
     {
         case 10:
-#line 31 "parser.y" /* yacc.c:1646  */
+#line 32 "parser.y" /* yacc.c:1646  */
     {
+                int index;
                 load_token((yyvsp[-2].str),(yyvsp[-1].str));
+                //index=fetch_token($1);
+                //printf("Key:%s\nValue:%s\n",symbol_table.tokens[index].key,symbol_table.tokens[index].value);
                 }
-#line 1438 "y.tab.c" /* yacc.c:1646  */
+#line 1441 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1442 "y.tab.c" /* yacc.c:1646  */
+#line 1445 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1666,7 +1669,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 151 "parser.y" /* yacc.c:1906  */
+#line 155 "parser.y" /* yacc.c:1906  */
 
 void yyerror(const char *error_msg) {
 	printf("error_msg: %s\n", error_msg);

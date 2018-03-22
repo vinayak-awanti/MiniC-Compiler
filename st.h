@@ -13,6 +13,8 @@ typedef struct token{
 typedef struct sym_t{
 	token tokens[100];
 } sym_t;
+
+
 int fetch_token(char *);
 void load_token(char *key,char *val);
 
