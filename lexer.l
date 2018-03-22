@@ -109,16 +109,17 @@ commentBody						(.|\n)*
 
 "false"						{return FALSE;}
 
-[a-zA-Z][[0-9]|[a-zA-Z]]	{return ID;}
+[a-zA-Z][[0-9]|[a-zA-Z]]*	{return ID;}
 
 [0-9]+						{return NUMCONST;}
 
 {charconst}					{return CHARCONST;}
 
-[ \n\t]						;
+[ \n|\t]						;
 
 .							{
-								yyerror("invalid character");
+								
+								yyerror("\ninvalid character");
 								return *yytext;
 							}
 
