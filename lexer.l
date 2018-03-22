@@ -7,14 +7,13 @@ void yyerror(const char* error_msg);
 
 %}
 
-letter  					[a-zA-Z]
-digit						[0-9]
+letter	[a-z]
+digit	[0-9]
+id	{letter}({letter}|{digit})*
 notquote					[^\']
 quote						[\']
-letdig						{digit} | {letter}
-id							{letter}{letdig}
 numconst					{digit}+	
-charconst					{quote}{notquote}{quote} 
+charconst					{quote}{notquote}{quote}
 commentBody						(.|\n)*
 
 %%
@@ -109,15 +108,16 @@ commentBody						(.|\n)*
 
 "false"						{return FALSE;}
 
-[a-zA-Z][[0-9]|[a-zA-Z]]	{return ID;}
+{id}						{return ID;}
 
-[0-9]+						{return NUMCONST;}
+{numconst}					{return NUMCONST;}
 
 {charconst}					{return CHARCONST;}
 
-[ \n\t]						;
+[ \n\t\r]						;
 
 .							{
+								printf("%d\n", *yytext);	
 								yyerror("invalid character");
 								return *yytext;
 							}
