@@ -1,13 +1,29 @@
 #include "st.h"
 int size=0;
-sym_t symbol_table;
 
 
-void load_token(char *key,char *val){
-	printf("%s",key);
-//	strcpy(symbol_table.tokens[size].key,key);
-	//strcpy(symbol_table.tokens[size].value,val);
-	//size+=1;
+
+void load_token(char *key,char *val,int line){
+	int i,flag=-1;
+	for(i=0;i<size;i++){
+		if(strcmp(symbol_table.tokens[i].key,key)==0){
+			flag=1;
+			strcpy(symbol_table.tokens[i].key,key);
+			strcpy(symbol_table.tokens[i].value,val);
+			symbol_table.tokens[i].line=line;
+			break;
+		}
+	}
+
+	//printf("Here we are%s",key);
+	if(flag==-1){
+		strcpy(symbol_table.tokens[size].key,key);
+		strcpy(symbol_table.tokens[size].value,val);
+		symbol_table.tokens[size].line=line;
+		//printf("Line no%d\n",symbol_table.tokens[size].line);		
+		size+=1;
+	}	
+	//return
 
 }
 int fetch_token(char *key){
@@ -22,6 +38,14 @@ int fetch_token(char *key){
 	return flag;
 
 }
+void show_me(){
+	int i;
+	printf("Token-No\tSymbol\tToken\tLine-No\n");
+	for(i=0;i<size;i++){
+		printf("%d\t\t%s\t%s\t%d\n",i+1,symbol_table.tokens[i].key,symbol_table.tokens[i].value,symbol_table.tokens[i].line);
+	}
+}
+
 /*
 int main(){
 	int index;

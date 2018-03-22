@@ -27,20 +27,26 @@ declaration : varDeclaration
 headerDeclaration : INCLUDE
                   ;
 mainDeclaration : INT_MAIN statement
+                  {
+                   // printf("Once here");
+                  }
                 ;
 varDeclaration : typeSpecifier varDeclList SEMI_COLON
                 {
+                //printf("%d",line_no);
+               // printf("%s",$3);
                 int index;
-                load_token($1,$2);
-                //index=fetch_token($1);
+                load_token($2,$1,line_no);
                 //printf("Key:%s\nValue:%s\n",symbol_table.tokens[index].key,symbol_table.tokens[index].value);
                 }
                ;
 varDeclList : varDeclList COMMA varDeclInitialize
             | varDeclInitialize
+            
             ;
 varDeclInitialize : varDeclId
                   | varDeclId EQUAL simpleExpression
+
                   ;
 varDeclId : ID
           | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE
@@ -50,6 +56,7 @@ varDeclId : ID
 typeSpecifier : INT
               | BOOL
               | CHAR
+              
               ;
 statement : declStmt
           | expressionStmt
@@ -159,6 +166,7 @@ void yyerror(const char *error_msg) {
 
 int main() {
 	if (!yyparse()) {
+    show_me();
 		printf("successful\n");
 	} else {
 		printf("unsuccessful\n");

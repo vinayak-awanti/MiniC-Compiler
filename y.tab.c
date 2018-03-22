@@ -531,15 +531,15 @@ static const yytype_uint8 yytranslate[] =
 static const yytype_uint8 yyrline[] =
 {
        0,    18,    18,    20,    21,    23,    24,    25,    27,    29,
-      31,    39,    40,    42,    43,    45,    46,    47,    48,    50,
-      51,    52,    54,    55,    56,    57,    58,    59,    60,    61,
-      62,    64,    66,    67,    69,    71,    73,    75,    76,    78,
-      79,    81,    82,    84,    85,    87,    88,    89,    91,    93,
-      94,    95,    96,    97,    98,    99,   100,   102,   103,   105,
-     106,   108,   109,   111,   112,   114,   115,   116,   117,   118,
-     119,   121,   122,   124,   125,   127,   128,   130,   131,   132,
-     134,   135,   137,   138,   140,   141,   143,   144,   145,   147,
-     148,   150,   151,   152,   153
+      34,    43,    44,    47,    48,    51,    52,    53,    54,    56,
+      57,    58,    61,    62,    63,    64,    65,    66,    67,    68,
+      69,    71,    73,    74,    76,    78,    80,    82,    83,    85,
+      86,    88,    89,    91,    92,    94,    95,    96,    98,   100,
+     101,   102,   103,   104,   105,   106,   107,   109,   110,   112,
+     113,   115,   116,   118,   119,   121,   122,   123,   124,   125,
+     126,   128,   129,   131,   132,   134,   135,   137,   138,   139,
+     141,   142,   144,   145,   147,   148,   150,   151,   152,   154,
+     155,   157,   158,   159,   160
 };
 #endif
 
@@ -1429,19 +1429,28 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 10:
-#line 32 "parser.y" /* yacc.c:1646  */
+        case 9:
+#line 30 "parser.y" /* yacc.c:1646  */
     {
+                   // printf("Once here");
+                  }
+#line 1438 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 10:
+#line 35 "parser.y" /* yacc.c:1646  */
+    {
+                //printf("%d",line_no);
+               // printf("%s",$3);
                 int index;
-                load_token((yyvsp[-2].str),(yyvsp[-1].str));
-                //index=fetch_token($1);
+                load_token((yyvsp[-1].str),(yyvsp[-2].str),line_no);
                 //printf("Key:%s\nValue:%s\n",symbol_table.tokens[index].key,symbol_table.tokens[index].value);
                 }
-#line 1441 "y.tab.c" /* yacc.c:1646  */
+#line 1450 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1445 "y.tab.c" /* yacc.c:1646  */
+#line 1454 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1669,7 +1678,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 155 "parser.y" /* yacc.c:1906  */
+#line 162 "parser.y" /* yacc.c:1906  */
 
 void yyerror(const char *error_msg) {
 	printf("error_msg: %s\n", error_msg);
@@ -1677,6 +1686,7 @@ void yyerror(const char *error_msg) {
 
 int main() {
 	if (!yyparse()) {
+    show_me();
 		printf("successful\n");
 	} else {
 		printf("unsuccessful\n");
