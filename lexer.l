@@ -3,18 +3,25 @@
 #include <stdio.h>
 #include <string.h>
 #include "y.tab.h"  
+void yyerror(const char* error_msg);
 
 %}
 
 letter  					[a-zA-Z]
 digit						[0-9]
 notquote					[^\']
+quote						[\']
 letdig						{digit} | {letter}
 id							{letter}{letdig}
 numconst					{digit}+	
 charconst					{quote}{notquote}{quote} 
+commentBody						(.|\n)*
 
 %%
+
+\/\/.*						;
+
+\/\*{commentBody}\*\/		;
 
 "int main()"				{return INT_MAIN;}
 
@@ -72,7 +79,7 @@ charconst					{quote}{notquote}{quote}
 
 "<"							{return LESS;}
 
-">"							{return GREATER;}
+">"							{return GREAT;}
 
 "["							{return OPEN_SQUARE;}
 
@@ -94,8 +101,6 @@ charconst					{quote}{notquote}{quote}
 
 "!="						{return NOT_EQUAL;}
 
-"*"							{return MUL;}
-
 "/"							{return DIV;}
 
 "%"							{return MOD;}
@@ -104,8 +109,17 @@ charconst					{quote}{notquote}{quote}
 
 "false"						{return FALSE;}
 
-{id}						{return ID;}
+[a-zA-Z][[0-9]|[a-zA-Z]]	{return ID;}
 
-{numconst}					{return NUMCONST;}
+[0-9]+						{return NUMCONST;}
 
-{charconst}					{return CHAR_CONST;}
+{charconst}					{return CHARCONST;}
+
+[ \n\t]						;
+
+.							{
+								yyerror("invalid character");
+								return *yytext;
+							}
+
+
