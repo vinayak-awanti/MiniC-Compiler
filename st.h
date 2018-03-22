@@ -1,6 +1,8 @@
 #ifndef ST_H
 #include<stdio.h>
+#include<stdlib.h>
 #include<string.h>
+
 #define MAX 100
 
 #define ST_H
@@ -19,6 +21,7 @@ sym_t symbol_table;
 int fetch_token(char *);
 void load_token(char *key,char *val,int line);
 void show_me();
+extern char code[1024];
 extern int line_no;
 extern int size;
 #endif

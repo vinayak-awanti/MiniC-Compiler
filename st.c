@@ -40,9 +40,9 @@ int fetch_token(char *key){
 }
 void show_me(){
 	int i;
-	printf("Token-No\tSymbol\tToken\tLine-No\n");
+	printf("\tToken-No\tSymbol\tToken\tLine-No\n");
 	for(i=0;i<size;i++){
-		printf("%d\t\t%s\t%s\t%d\n",i+1,symbol_table.tokens[i].key,symbol_table.tokens[i].value,symbol_table.tokens[i].line);
+		printf("\t  %d\t\t  %s\t  %s\t  %d\n",i+1,symbol_table.tokens[i].key,symbol_table.tokens[i].value,symbol_table.tokens[i].line);
 	}
 }
 

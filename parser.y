@@ -166,7 +166,15 @@ void yyerror(const char *error_msg) {
 
 int main() {
 	if (!yyparse()) {
+    printf("\n\nClean code after removing comments :-> \n");
+    printf("**********************************************\n");
+    printf("\n%s\n",code);
+    printf("**********************************************\n\n\n");
+    printf("Symbol Table :->\n");
+    printf("----------------------------------------------\n");
+
     show_me();
+    printf("\n-----------------------------------------------\n");
 		printf("successful\n");
 	} else {
 		printf("unsuccessful\n");
