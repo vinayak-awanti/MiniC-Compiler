@@ -1,10 +1,10 @@
 #include <stdio.h>
-int main(){
-	/*
-	abc 
-	*/
-	int x=5;
-	int g=10;
-	g+x;
-	char x='k';
+
+/* this a test program */
+
+int main() {
+	int arr[10], barr[10][10];
+	int *p, a, *ptr;
+	int b, c, d, e;
+	return 0;
 }

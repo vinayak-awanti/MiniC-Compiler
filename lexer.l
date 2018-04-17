@@ -13,21 +13,19 @@ letter  					[a-zA-Z]
 digit						[0-9]
 notquote					[^\']
 quote						[\']
-letdig						{digit} | {letter}
-id							{letter}{letdig}
 numconst					{digit}+	
 charconst					{quote}{notquote}{quote} 
-commentBody						(.|\n)*
+commentBody					(.|\n)*
 
 %%
 
 \/\/.*						;
 
-\/\*{commentBody}\*\/		;
+\/\*{commentBody}\*\/				;
 
-"int main()"				{yylval.str = strdup(yytext);strcat(code,yytext); return INT_MAIN;}
+"int main()"					{yylval.str = strdup(yytext);strcat(code,yytext); return INT_MAIN;}
 
-"#include <stdio.h>"		{yylval.str = strdup(yytext);strcat(code,yytext); return INCLUDE;}
+"#include <stdio.h>"				{yylval.str = strdup(yytext);strcat(code,yytext); return INCLUDE;}
 
 "int"						{yylval.str = strdup(yytext);strcat(code,yytext); return INT;}
 
@@ -49,7 +47,7 @@ commentBody						(.|\n)*
 
 "break"						{yylval.str = strdup(yytext);strcat(code,yytext); return BREAK;}
 
-"="							{yylval.str = strdup(yytext);strcat(code,yytext); return EQUAL;}
+"="						{yylval.str = strdup(yytext);strcat(code,yytext); return EQUAL;}
 
 "+="						{yylval.str = strdup(yytext);strcat(code,yytext); return PLUS_EQUAL;}
 
@@ -67,35 +65,35 @@ commentBody						(.|\n)*
 
 "&&"						{yylval.str = strdup(yytext);strcat(code,yytext); return LOGIC_AND;}
 
-"!"							{yylval.str = strdup(yytext);strcat(code,yytext); return NOT;}
+"!"						{yylval.str = strdup(yytext);strcat(code,yytext); return NOT;}
 
-";"							{yylval.str = strdup(yytext);strcat(code,yytext); return SEMI_COLON;}
+";"						{yylval.str = strdup(yytext);strcat(code,yytext); return SEMI_COLON;}
 
-","							{yylval.str = strdup(yytext);strcat(code,yytext); return COMMA;}
+","						{yylval.str = strdup(yytext);strcat(code,yytext); return COMMA;}
 
-"+"							{yylval.str = strdup(yytext);strcat(code,yytext); return PLUS;}
+"+"						{yylval.str = strdup(yytext);strcat(code,yytext); return PLUS;}
 
-"-"							{yylval.str = strdup(yytext);strcat(code,yytext); return MINUS;}
+"-"						{yylval.str = strdup(yytext);strcat(code,yytext); return MINUS;}
 
 "<="						{yylval.str = strdup(yytext);strcat(code,yytext); return LESS_EQUAL;}
 
-"<"							{yylval.str = strdup(yytext);strcat(code,yytext); return LESS;}
+"<"						{yylval.str = strdup(yytext);strcat(code,yytext); return LESS;}
 
-">"							{yylval.str = strdup(yytext);strcat(code,yytext); return GREAT;}
+">"						{yylval.str = strdup(yytext);strcat(code,yytext); return GREAT;}
 
-"["							{yylval.str = strdup(yytext);strcat(code,yytext); return OPEN_SQUARE;}
+"["						{yylval.str = strdup(yytext);strcat(code,yytext); return OPEN_SQUARE;}
 
-"]"							{yylval.str = strdup(yytext);strcat(code,yytext); return CLOSE_SQUARE;}
+"]"						{yylval.str = strdup(yytext);strcat(code,yytext); return CLOSE_SQUARE;}
 
-"{"							{yylval.str = strdup(yytext);strcat(code,yytext); return OPEN_FLOWER;}
+"{"						{yylval.str = strdup(yytext);strcat(code,yytext); return OPEN_FLOWER;}
 
-"}"							{yylval.str = strdup(yytext);strcat(code,yytext); return CLOSE_FLOWER;}
+"}"						{yylval.str = strdup(yytext);strcat(code,yytext); return CLOSE_FLOWER;}
 
-"*"							{yylval.str = strdup(yytext);strcat(code,yytext); return STAR;}
+"*"						{yylval.str = strdup(yytext);strcat(code,yytext); return STAR;}
 
-"("							{yylval.str = strdup(yytext);strcat(code,yytext); return OPEN_SIMPLE;}
+"("						{yylval.str = strdup(yytext);strcat(code,yytext); return OPEN_SIMPLE;}
 
-")"							{yylval.str = strdup(yytext);strcat(code,yytext); return CLOSE_SIMPLE;}
+")"						{yylval.str = strdup(yytext);strcat(code,yytext); return CLOSE_SIMPLE;}
 
 ">="						{yylval.str = strdup(yytext);strcat(code,yytext); return GREAT_EQUAL;}
 
@@ -103,27 +101,24 @@ commentBody						(.|\n)*
 
 "!="						{yylval.str = strdup(yytext);strcat(code,yytext); return NOT_EQUAL;}
 
-"/"							{yylval.str = strdup(yytext);strcat(code,yytext); return DIV;}
+"/"						{yylval.str = strdup(yytext);strcat(code,yytext); return DIV;}
 
-"%"							{yylval.str = strdup(yytext);strcat(code,yytext); return MOD;}
+"%"						{yylval.str = strdup(yytext);strcat(code,yytext); return MOD;}
 
 "true"						{yylval.str = strdup(yytext);strcat(code,yytext); return TRUE;}
 
 "false"						{yylval.str = strdup(yytext);strcat(code,yytext); return FALSE;}
 
-[a-zA-Z][[0-9]|[a-zA-Z]]*	{yylval.str = strdup(yytext);strcat(code,yytext); return ID;}
+{letter}({letter}|{digit})*			{yylval.str = strdup(yytext);strcat(code,yytext); return ID;}
 
 [0-9]+						{yylval.str = strdup(yytext);strcat(code,yytext); return NUMCONST;}
 
 {charconst}					{yylval.str = strdup(yytext);strcat(code,yytext); return CHARCONST;}
 
-[\n]						{line_no++	;strcat(code,yytext);}
+[\n]						{line_no++;strcat(code,yytext);}
+
 [ \t]						{strcat(code,yytext);};
 
-.							{
-								
-								yyerror("\ninvalid character");
-								return *yytext;
-							}
+.						{yyerror("\ninvalid character"); return *yytext;}
 
 

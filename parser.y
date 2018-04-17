@@ -5,14 +5,16 @@
 void yyerror(const char *error_msg);
 int yylex();
 
+int scope = 0;
+
 %}
 %union {
     char *str;
 };
 
-%token INCLUDE SEMI_COLON COMMA EQUAL ID OPEN_SQUARE CLOSE_SQUARE NUMCONST CHARCONST  INT BOOL CHAR OPEN_FLOWER CLOSE_FLOWER PRINTF SCANF OPEN_SIMPLE CLOSE_SIMPLE IF WHILE BREAK RETURN PLUS_EQUAL MINUS_EQUAL MUL_EQUAL DIV_EQUAL PLUS_PLUS ELSE INT_MAIN MINUS_MINUS LOGIC_OR LOGIC_AND NOT LESS_EQUAL GREAT_EQUAL LESS GREAT NOT_EQUAL EQUAL_EQUAL PLUS MINUS STAR DIV MOD TRUE FALSE 
+%token INCLUDE SEMI_COLON COMMA EQUAL ID OPEN_SQUARE CLOSE_SQUARE NUMCONST CHARCONST  INT BOOL CHAR OPEN_FLOWER CLOSE_FLOWER PRINTF SCANF OPEN_SIMPLE CLOSE_SIMPLE IF WHILE BREAK RETURN PLUS_EQUAL MINUS_EQUAL MUL_EQUAL DIV_EQUAL PLUS_PLUS ELSE INT_MAIN MINUS_MINUS LOGIC_OR LOGIC_AND NOT LESS_EQUAL GREAT_EQUAL LESS GREAT NOT_EQUAL EQUAL_EQUAL PLUS MINUS STAR DIV MOD TRUE FALSE
 
-%type<str>  typeSpecifier varDeclList INT BOOL CHAR varDeclInitialize varDeclId simpleExpression ID  NUMCONST CLOSE_SQUARE OPEN_SQUARE  STAR unaryExpression breakStmt expression  andExpression unaryRelExpression unaryop factor mutable immutable constant BREAK SEMI_COLON NOT MINUS relExpression  OPEN_SIMPLE  CLOSE_SIMPLE  CHARCONST TRUE FALSE sumExpression term
+%type<str>  typeSpecifier varDeclList INT BOOL CHAR varDeclInitialize varDeclId simpleExpression ID NUMCONST CLOSE_SQUARE OPEN_SQUARE  STAR unaryExpression breakStmt expression  andExpression unaryRelExpression unaryop factor mutable immutable constant BREAK SEMI_COLON NOT MINUS relExpression  OPEN_SIMPLE  CLOSE_SIMPLE  CHARCONST TRUE FALSE sumExpression term
 %%
 
 program : declarationList
@@ -27,36 +29,49 @@ declaration : varDeclaration
 headerDeclaration : INCLUDE
                   ;
 mainDeclaration : INT_MAIN statement
-                  {
-                   // printf("Once here");
-                  }
                 ;
 varDeclaration : typeSpecifier varDeclList SEMI_COLON
-                {
-                //printf("%d",line_no);
-               // printf("%s",$3);
-                int index;
-                load_token($2,$1,line_no);
-                //printf("Key:%s\nValue:%s\n",symbol_table.tokens[index].key,symbol_table.tokens[index].value);
-                }
                ;
-varDeclList : varDeclList COMMA varDeclInitialize
-            | varDeclInitialize
-            
+varDeclList : varDeclList COMMA varDeclInitialize {}
+            | varDeclInitialize	{}
             ;
-varDeclInitialize : varDeclId
-                  | varDeclId EQUAL simpleExpression
-
+varDeclInitialize : varDeclId				{}
+                  | varDeclId EQUAL simpleExpression	{}
                   ;
-varDeclId : ID
-          | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE
-          | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE OPEN_SQUARE NUMCONST CLOSE_SQUARE
-          | STAR ID
+varDeclId : ID	{
+				load_token($1, (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), line_no, scope);
+			}
+          | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE {
+				char type[20] = {0};
+				sprintf(type, "%s[%s]", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), $3);
+				if(load_token($1, type, line_no, scope)) {
+					char buf[50]; sprintf(buf, "redeclaration of %s", $1);
+					yyerror(buf);
+					YYABORT;
+				}
+          	}
+          | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE OPEN_SQUARE NUMCONST CLOSE_SQUARE {
+          		char type[20] = {0};
+          		sprintf(type, "%s[%s][%s]", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), $3, $6);
+          		if(load_token($1, type, line_no, scope)) {
+					char buf[50]; sprintf(buf, "redeclaration of %s", $1);
+					yyerror(buf);
+					YYABORT;
+				}
+          	}	
+          | STAR ID {
+				char type[20] = {0};
+				sprintf(type, "%s*", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2));
+				if(load_token($2, type, line_no, scope)) {
+					char buf[50]; sprintf(buf, "redeclaration of %s", $1);
+					yyerror(buf);
+					YYABORT;
+				}         	
+          }
           ;
 typeSpecifier : INT
               | BOOL
               | CHAR
-              
               ;
 statement : declStmt
           | expressionStmt
@@ -68,7 +83,7 @@ statement : declStmt
           | printfStmt
           | scanfStmt
           ;
-compoundStmt : OPEN_FLOWER statementList CLOSE_FLOWER
+compoundStmt : OPEN_FLOWER statementList CLOSE_FLOWER {++scope;}
              ;
 statementList : statementList statement
               |
@@ -166,15 +181,14 @@ void yyerror(const char *error_msg) {
 
 int main() {
 	if (!yyparse()) {
-    printf("\n\nClean code after removing comments :-> \n");
-    printf("**********************************************\n");
-    printf("\n%s\n",code);
-    printf("**********************************************\n\n\n");
-    printf("Symbol Table :->\n");
-    printf("----------------------------------------------\n");
-
-    show_me();
-    printf("\n-----------------------------------------------\n");
+		printf("\n\nClean code after removing comments :-> \n");
+		printf("**********************************************\n");
+		printf("\n%s\n",code);
+		printf("**********************************************\n\n\n");
+		printf("Symbol Table :->\n");
+		printf("----------------------------------------------\n");
+		show_me();
+		printf("\n-----------------------------------------------\n");
 		printf("successful\n");
 	} else {
 		printf("unsuccessful\n");

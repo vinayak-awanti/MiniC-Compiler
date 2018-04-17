@@ -1,57 +1,57 @@
 #include "st.h"
-int size=0;
 
-
-
-void load_token(char *key,char *val,int line){
-	int i,flag=-1;
-	for(i=0;i<size;i++){
-		if(strcmp(symbol_table.tokens[i].key,key)==0){
-			flag=1;
-			strcpy(symbol_table.tokens[i].key,key);
-			strcpy(symbol_table.tokens[i].value,val);
-			symbol_table.tokens[i].line=line;
-			break;
-		}
-	}
-
-	//printf("Here we are%s",key);
-	if(flag==-1){
-		strcpy(symbol_table.tokens[size].key,key);
-		strcpy(symbol_table.tokens[size].value,val);
-		symbol_table.tokens[size].line=line;
-		//printf("Line no%d\n",symbol_table.tokens[size].line);		
-		size+=1;
-	}	
-	//return
-
-}
-int fetch_token(char *key){
-	int i,flag=-1;
-
-	for(i=0;i<MAX;i++){
-		if(strcmp(symbol_table.tokens[i].key,key)==0){
-			flag=1;
-			return i;
-		}
-	}
-	return flag;
-
-}
-void show_me(){
+// returns 0 if token was successfully inserted, 1 otherwise.
+int load_token(char *name, char *type, int line, int scope){
 	int i;
-	printf("\tToken-No\tSymbol\tToken\tLine-No\n");
-	for(i=0;i<size;i++){
-		printf("\t  %d\t\t  %s\t  %s\t  %d\n",i+1,symbol_table.tokens[i].key,symbol_table.tokens[i].value,symbol_table.tokens[i].line);
+	
+	// return 1 if token already exists. redeclaration.
+	for(i = 0; i < symbol_table[scope].st_size; ++i){
+		if(strcmp(symbol_table[scope].token[i].name, name) == 0){
+			return 1;
+		}
+	}
+	
+	// if token does not exist insert it.
+	
+	int tmp_size = symbol_table[scope].st_size;
+	strcpy(symbol_table[scope].token[tmp_size].name, name);
+	strcpy(symbol_table[scope].token[tmp_size].type, type);
+	symbol_table[scope].token[tmp_size].line = line;
+	++symbol_table[scope].st_size;
+	
+	return 0;
+}
+
+/*int fetch_token(char *key){*/
+/*	int i, flag = -1;*/
+
+/*	for(i = 0; i < MAX; ++i){*/
+/*		if(strcmp(symbol_table.token[i].key,key)==0){*/
+/*			flag = 1;*/
+/*			return i;*/
+/*		}*/
+/*	}*/
+/*	return flag;*/
+/*}*/
+
+void show_me(){
+	int i, j;
+	for (i = 0; i < 10; ++i) {
+		printf("Scope %d\n", i);
+		printf("|        Token-No |            Name |            Type |         Line-No |\n");
+		printf("-------------------------------------------------------------------------\n");	
+		for (j = 0; j < symbol_table[i].st_size; ++j) {
+			printf("| %15d | %15s | %15s | %15d |\n", j, symbol_table[i].token[j].name, symbol_table[i].token[j].type, symbol_table[i].token[j].line);
+		}
 	}
 }
 
-/*
-int main(){
-	int index;
-	//printf("Hello");
-	load_token("int","keyword");
-	index=fetch_token("int");
-	printf("Key:%s\nValue:%s\n",symbol_table.tokens[index].key,symbol_table.tokens[index].value);
-}
-*/
+/*int main(){*/
+/*	load_token("a", "int", 1, 0);*/
+/*	int rv = load_token("a", "int", 2, 0);*/
+/*	printf("rv: %d", rv);*/
+/*	*/
+/*	show_me();*/
+/*	*/
+/*	return 0;*/
+/*}*/
