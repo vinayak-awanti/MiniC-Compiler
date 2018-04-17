@@ -1,10 +1,12 @@
 #include <stdio.h>
 
-/* this a test program */
-
 int a = 10;
 
+/*this is a test program*/
+
 int main() {
+/*	hello world*/
+
 	int arr[10], barr[10][10];
 	{
 		int *p, a, *ptr;

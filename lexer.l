@@ -15,7 +15,7 @@ notquote					[^\']
 quote						[\']
 numconst					{digit}+	
 charconst					{quote}{notquote}{quote} 
-commentBody					(.|\n)*
+commentBody					[^/]*
 
 %%
 
