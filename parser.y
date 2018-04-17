@@ -39,7 +39,11 @@ varDeclInitialize : varDeclId				{}
                   | varDeclId EQUAL simpleExpression	{}
                   ;
 varDeclId : ID	{
-				load_token($1, (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), line_no, scope);
+				if(load_token($1, (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), line_no, scope)) {
+					char buf[50]; sprintf(buf, "redeclaration of %s", $1);
+					yyerror(buf);
+					YYABORT;
+				}
 			}
           | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE {
 				char type[20] = {0};
@@ -63,7 +67,7 @@ varDeclId : ID	{
 				char type[20] = {0};
 				sprintf(type, "%s*", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2));
 				if(load_token($2, type, line_no, scope)) {
-					char buf[50]; sprintf(buf, "redeclaration of %s", $1);
+					char buf[50]; sprintf(buf, "redeclaration of %s", $2);
 					yyerror(buf);
 					YYABORT;
 				}         	
