@@ -44,6 +44,7 @@ void show_me(){
 		for (j = 0; j < symbol_table[i].st_size; ++j) {
 			printf("| %15d | %15s | %15s | %15d |\n", j, symbol_table[i].token[j].name, symbol_table[i].token[j].type, symbol_table[i].token[j].line);
 		}
+		printf("\n");
 	}
 }
 
