@@ -3,123 +3,122 @@
 #include <stdio.h>
 #include <string.h>
 #include "y.tab.h"  
+#include "st.h"
+int line_no=0;
+char code[1024];
 void yyerror(const char* error_msg);
-
 %}
 
-letter	[a-z]
-digit	[0-9]
-id	{letter}({letter}|{digit})*
+letter  					[a-zA-Z]
+digit						[0-9]
 notquote					[^\']
 quote						[\']
 numconst					{digit}+	
-charconst					{quote}{notquote}{quote}
-commentBody						(.|\n)*
+charconst					{quote}{notquote}{quote} 
+commentBody					(.|\n)*
 
 %%
 
 \/\/.*						;
 
-\/\*{commentBody}\*\/		;
+\/\*{commentBody}\*\/				;
 
-"int main()"				{return INT_MAIN;}
+"int main()"					{yylval.str = strdup(yytext);strcat(code,yytext); return INT_MAIN;}
 
-"#include <stdio.h>"		{return INCLUDE;}
+"#include <stdio.h>"				{yylval.str = strdup(yytext);strcat(code,yytext); return INCLUDE;}
 
-"int"						{return INT;}
+"int"						{yylval.str = strdup(yytext);strcat(code,yytext); return INT;}
 
-"bool"						{return BOOL;}
+"bool"						{yylval.str = strdup(yytext);strcat(code,yytext); return BOOL;}
 
-"char"						{return CHAR;}
+"char"						{yylval.str = strdup(yytext);strcat(code,yytext); return CHAR;}
 
-"printf"					{return PRINTF;}
+"printf"					{yylval.str = strdup(yytext);strcat(code,yytext); return PRINTF;}
 
-"scanf"						{return SCANF;}
+"scanf"						{yylval.str = strdup(yytext);strcat(code,yytext); return SCANF;}
 
-"if"						{return IF;}
+"if"						{yylval.str = strdup(yytext);strcat(code,yytext); return IF;}
 
-"else"						{return ELSE;}
+"else"						{yylval.str = strdup(yytext);strcat(code,yytext); return ELSE;}
 
-"while"						{return WHILE;}
+"while"						{yylval.str = strdup(yytext);strcat(code,yytext); return WHILE;}
 
-"return"					{return RETURN;}
+"return"					{yylval.str = strdup(yytext);strcat(code,yytext); return RETURN;}
 
-"break"						{return BREAK;}
+"break"						{yylval.str = strdup(yytext);strcat(code,yytext); return BREAK;}
 
-"="							{return EQUAL;}
+"="						{yylval.str = strdup(yytext);strcat(code,yytext); return EQUAL;}
 
-"+="						{return PLUS_EQUAL;}
+"+="						{yylval.str = strdup(yytext);strcat(code,yytext); return PLUS_EQUAL;}
 
-"-="						{return MINUS_EQUAL;}
+"-="						{yylval.str = strdup(yytext);strcat(code,yytext); return MINUS_EQUAL;}
 
-"*="						{return MUL_EQUAL;}
+"*="						{yylval.str = strdup(yytext);strcat(code,yytext); return MUL_EQUAL;}
 
-"/="						{return DIV_EQUAL;}
+"/="						{yylval.str = strdup(yytext);strcat(code,yytext); return DIV_EQUAL;}
 
-"++"						{return PLUS_PLUS;}
+"++"						{yylval.str = strdup(yytext);strcat(code,yytext); return PLUS_PLUS;}
 
-"--"						{return MINUS_MINUS;}
+"--"						{yylval.str = strdup(yytext);strcat(code,yytext); return MINUS_MINUS;}
 
-"||"						{return LOGIC_OR;}
+"||"						{yylval.str = strdup(yytext);strcat(code,yytext); return LOGIC_OR;}
 
-"&&"						{return LOGIC_AND;}
+"&&"						{yylval.str = strdup(yytext);strcat(code,yytext); return LOGIC_AND;}
 
-"!"							{return NOT;}
+"!"						{yylval.str = strdup(yytext);strcat(code,yytext); return NOT;}
 
-";"							{return SEMI_COLON;}
+";"						{yylval.str = strdup(yytext);strcat(code,yytext); return SEMI_COLON;}
 
-","							{return COMMA;}
+","						{yylval.str = strdup(yytext);strcat(code,yytext); return COMMA;}
 
-"+"							{return PLUS;}
+"+"						{yylval.str = strdup(yytext);strcat(code,yytext); return PLUS;}
 
-"-"							{return MINUS;}
+"-"						{yylval.str = strdup(yytext);strcat(code,yytext); return MINUS;}
 
-"<="						{return LESS_EQUAL;}
+"<="						{yylval.str = strdup(yytext);strcat(code,yytext); return LESS_EQUAL;}
 
-"<"							{return LESS;}
+"<"						{yylval.str = strdup(yytext);strcat(code,yytext); return LESS;}
 
-">"							{return GREAT;}
+">"						{yylval.str = strdup(yytext);strcat(code,yytext); return GREAT;}
 
-"["							{return OPEN_SQUARE;}
+"["						{yylval.str = strdup(yytext);strcat(code,yytext); return OPEN_SQUARE;}
 
-"]"							{return CLOSE_SQUARE;}
+"]"						{yylval.str = strdup(yytext);strcat(code,yytext); return CLOSE_SQUARE;}
 
-"{"							{return OPEN_FLOWER;}
+"{"						{yylval.str = strdup(yytext);strcat(code,yytext); return OPEN_FLOWER;}
 
-"}"							{return CLOSE_FLOWER;}
+"}"						{yylval.str = strdup(yytext);strcat(code,yytext); return CLOSE_FLOWER;}
 
-"*"							{return STAR;}
+"*"						{yylval.str = strdup(yytext);strcat(code,yytext); return STAR;}
 
-"("							{return OPEN_SIMPLE;}
+"("						{yylval.str = strdup(yytext);strcat(code,yytext); return OPEN_SIMPLE;}
 
-")"							{return CLOSE_SIMPLE;}
+")"						{yylval.str = strdup(yytext);strcat(code,yytext); return CLOSE_SIMPLE;}
 
-">="						{return GREAT_EQUAL;}
+">="						{yylval.str = strdup(yytext);strcat(code,yytext); return GREAT_EQUAL;}
 
-"=="						{return EQUAL_EQUAL;}
+"=="						{yylval.str = strdup(yytext);strcat(code,yytext); return EQUAL_EQUAL;}
 
-"!="						{return NOT_EQUAL;}
+"!="						{yylval.str = strdup(yytext);strcat(code,yytext); return NOT_EQUAL;}
 
-"/"							{return DIV;}
+"/"						{yylval.str = strdup(yytext);strcat(code,yytext); return DIV;}
 
-"%"							{return MOD;}
+"%"						{yylval.str = strdup(yytext);strcat(code,yytext); return MOD;}
 
-"true"						{return TRUE;}
+"true"						{yylval.str = strdup(yytext);strcat(code,yytext); return TRUE;}
 
-"false"						{return FALSE;}
+"false"						{yylval.str = strdup(yytext);strcat(code,yytext); return FALSE;}
 
-{id}						{return ID;}
+{letter}({letter}|{digit})*			{yylval.str = strdup(yytext);strcat(code,yytext); return ID;}
 
-{numconst}					{return NUMCONST;}
+[0-9]+						{yylval.str = strdup(yytext);strcat(code,yytext); return NUMCONST;}
 
-{charconst}					{return CHARCONST;}
+{charconst}					{yylval.str = strdup(yytext);strcat(code,yytext); return CHARCONST;}
 
-[ \n\t\r]						;
+[\n]						{line_no++;strcat(code,yytext);}
 
-.							{
-								printf("%d\n", *yytext);	
-								yyerror("invalid character");
-								return *yytext;
-							}
+[ \t]						{strcat(code,yytext);};
+
+.						{yyerror("\ninvalid character"); return *yytext;}
 
 
