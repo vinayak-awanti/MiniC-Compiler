@@ -10,7 +10,13 @@ int main() {
 		int *p, a, *ptr;
 	}
 	{
-	int b, c, d, e;
+		int b, c; 
+		{
+			char d, e;
+		}
+		{
+			char f, g;
+		}
 	}
 	return 0;
 }

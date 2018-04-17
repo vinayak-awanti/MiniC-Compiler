@@ -7,6 +7,8 @@ int yylex();
 
 int scope = 0;
 int parent_scope = -1;
+int scope_stack_top = 1;
+int scope_stack[50];
 
 %}
 %union {
@@ -88,7 +90,13 @@ statement : declStmt
           | printfStmt
           | scanfStmt
           ;
-compoundStmt : OPEN_FLOWER {++parent_scope; ++scope;} statementList CLOSE_FLOWER {--parent_scope;}
+compoundStmt : OPEN_FLOWER {
+				parent_scope = scope_stack[scope_stack_top - 1];
+				scope_stack[scope_stack_top++] = ++scope;
+				printf("p: %d, s: %d\n", parent_scope, scope);
+			} statementList CLOSE_FLOWER {
+				--scope_stack_top;
+			}
              ;
 statementList : statementList statement
               |
