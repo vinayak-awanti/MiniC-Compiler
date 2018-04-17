@@ -15,6 +15,7 @@ typedef struct token {
 } token_t;
 
 typedef struct sym_t {
+	int parent_scope;
 	int st_size;
 	token_t token[100];
 } sym_t;
@@ -22,7 +23,7 @@ typedef struct sym_t {
 sym_t symbol_table[10];
 
 int fetch_token(char*);
-int load_token(char*, char*, int, int);
+int load_token(char*, char*, int, int, int);
 void show_me();
 extern char code[1024];
 extern int line_no;

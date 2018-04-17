@@ -1,7 +1,7 @@
 #include "st.h"
 
 // returns 0 if token was successfully inserted, 1 otherwise.
-int load_token(char *name, char *type, int line, int scope){
+int load_token(char *name, char *type, int line, int scope, int parent_scope){
 	int i;
 	
 	// return 1 if token already exists. redeclaration.
@@ -17,6 +17,7 @@ int load_token(char *name, char *type, int line, int scope){
 	strcpy(symbol_table[scope].token[tmp_size].name, name);
 	strcpy(symbol_table[scope].token[tmp_size].type, type);
 	symbol_table[scope].token[tmp_size].line = line;
+	symbol_table[scope].parent_scope = parent_scope;
 	++symbol_table[scope].st_size;
 	
 	return 0;
@@ -37,7 +38,7 @@ int load_token(char *name, char *type, int line, int scope){
 void show_me(){
 	int i, j;
 	for (i = 0; i < 10; ++i) {
-		printf("Scope %d\n", i);
+		printf("Scope: %d\tParent scope: %d\n", i, symbol_table[i].parent_scope);
 		printf("|        Token-No |            Name |            Type |         Line-No |\n");
 		printf("-------------------------------------------------------------------------\n");	
 		for (j = 0; j < symbol_table[i].st_size; ++j) {
