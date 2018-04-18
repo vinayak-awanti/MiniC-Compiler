@@ -118,8 +118,8 @@ argList : argList COMMA expression
 expressionStmt : expression SEMI_COLON
                | SEMI_COLON
                ;
-selectionStmt : IF OPEN_SIMPLE simpleExpression CLOSE_SIMPLE
-              | IF OPEN_SIMPLE simpleExpression CLOSE_SIMPLE ELSE statement
+selectionStmt : IF OPEN_SIMPLE simpleExpression CLOSE_SIMPLE statement
+              | IF OPEN_SIMPLE simpleExpression CLOSE_SIMPLE statement ELSE statement
               ;
 iterationStmt : WHILE OPEN_SIMPLE simpleExpression CLOSE_SIMPLE statement
 returnStmt : RETURN SEMI_COLON

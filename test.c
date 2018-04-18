@@ -7,6 +7,14 @@ int a = 10;
 int main() {
 /*	hello world*/
 
+	if (1 < 2) {
+		if (2 < 3) {
+			
+		} else {
+			;	
+		}
+	}
+
 	int arr[10], barr[10][10];
 	{
 		int *p, a, *ptr;
