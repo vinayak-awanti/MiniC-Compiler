@@ -7,11 +7,12 @@ int a = 10;
 int main() {
 /*	hello world*/
 
-	if (1 < 2) {
-		if (2 < 3) {
-			
-		} else {
-			;	
+	while (a < b) {
+		if (2<3) {
+			int z= 20;
+		} 
+		else {
+			int y =10;	
 		}
 	}
 
@@ -28,6 +29,12 @@ int main() {
 			char f, g;
 		}
 		int x;
+	}
+	if(1<2){
+		int inif;
+	}
+	else {
+		int inelse;
 	}
 	return 0;
 }
