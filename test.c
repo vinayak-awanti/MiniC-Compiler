@@ -19,6 +19,7 @@ int main() {
 		{
 			char f, g;
 		}
+		int x;
 	}
 	return 0;
 }

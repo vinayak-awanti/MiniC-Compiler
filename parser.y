@@ -5,7 +5,8 @@
 void yyerror(const char *error_msg);
 int yylex();
 
-int scope = 0;
+int num_scope = 0;
+int current_scope = 0;
 int parent_scope = -1;
 int scope_stack_top = 1;
 int scope_stack[50];
@@ -42,7 +43,7 @@ varDeclInitialize : varDeclId				{}
                   | varDeclId EQUAL simpleExpression	{}
                   ;
 varDeclId : ID	{
-				if(load_token($1, (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), line_no, scope, parent_scope)) {
+				if(load_token($1, (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), line_no, current_scope, parent_scope)) {
 					char buf[50]; sprintf(buf, "redeclaration of %s", $1);
 					yyerror(buf);
 					YYABORT;
@@ -51,7 +52,7 @@ varDeclId : ID	{
           | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE {
 				char type[20] = {0};
 				sprintf(type, "%s[%s]", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), $3);
-				if(load_token($1, type, line_no, scope, parent_scope)) {
+				if(load_token($1, type, line_no, current_scope, parent_scope)) {
 					char buf[50]; sprintf(buf, "redeclaration of %s", $1);
 					yyerror(buf);
 					YYABORT;
@@ -60,7 +61,7 @@ varDeclId : ID	{
           | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE OPEN_SQUARE NUMCONST CLOSE_SQUARE {
           		char type[20] = {0};
           		sprintf(type, "%s[%s][%s]", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), $3, $6);
-          		if(load_token($1, type, line_no, scope, parent_scope)) {
+          		if(load_token($1, type, line_no, current_scope, parent_scope)) {
 					char buf[50]; sprintf(buf, "redeclaration of %s", $1);
 					yyerror(buf);
 					YYABORT;
@@ -69,7 +70,7 @@ varDeclId : ID	{
           | STAR ID {
 				char type[20] = {0};
 				sprintf(type, "%s*", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2));
-				if(load_token($2, type, line_no, scope, parent_scope)) {
+				if(load_token($2, type, line_no, current_scope, parent_scope)) {
 					char buf[50]; sprintf(buf, "redeclaration of %s", $2);
 					yyerror(buf);
 					YYABORT;
@@ -91,11 +92,13 @@ statement : declStmt
           | scanfStmt
           ;
 compoundStmt : OPEN_FLOWER {
-				parent_scope = scope_stack[scope_stack_top - 1];
-				scope_stack[scope_stack_top++] = ++scope;
-			} statementList CLOSE_FLOWER {
-				--scope_stack_top;
-			}
+			parent_scope = scope_stack[scope_stack_top - 1];
+			scope_stack[scope_stack_top++] = ++num_scope;
+			current_scope = num_scope;
+		} statementList CLOSE_FLOWER {
+			current_scope = parent_scope;
+			--scope_stack_top;
+		}
              ;
 statementList : statementList statement
               |
