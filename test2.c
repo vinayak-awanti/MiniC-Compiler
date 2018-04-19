@@ -1,7 +1,8 @@
 int main() {
-	a = -b;
-	b = *c;
-	c = d * e;
-	w = x || y && z;
-	x = !y;
+	int i = 0;
+	while (i < 5) {
+		i++;
+	}
+	return 0;
 }
+

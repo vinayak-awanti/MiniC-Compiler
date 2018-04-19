@@ -61,7 +61,7 @@ varDeclInitialize : varDeclId
                   ;
 varDeclId : ID	{
 			printf("%s", $1);
-			if(load_token($1, (strcmp($<str>-1, ",") ? $<str>-1 : $<str>-4), line_no, current_scope, parent_scope)) {
+			if(load_token($1, (strcmp($<str>-1, ",") ? $<str>-1 : $<str>-4), line_no, current_scope)) {
 				char buf[50]; sprintf(buf, "redeclaration of %s", $1);
 				yyerror(buf);
 				YYABORT;
@@ -71,7 +71,7 @@ varDeclId : ID	{
           	printf("%s%s%s%s", $1, $2, $3, $4);
 			char type[20] = {0};
 			sprintf(type, "%s[%s]", (strcmp($<str>-1, ",") ? $<str>-1 : $<str>-4), $3);
-			if(load_token($1, type, line_no, current_scope, parent_scope)) {
+			if(load_token($1, type, line_no, current_scope)) {
 				char buf[50]; sprintf(buf, "redeclaration of %s", $1);
 				yyerror(buf);
 				YYABORT;
@@ -81,7 +81,7 @@ varDeclId : ID	{
           		printf("%s%s%s%s%s%s%s", $1, $2, $3, $4, $5, $6, $7);
           		char type[20] = {0};
           		sprintf(type, "%s[%s][%s]", (strcmp($<str>-1, ",") ? $<str>-1 : $<str>-4), $3, $6);
-          		if(load_token($1, type, line_no, current_scope, parent_scope)) {
+          		if(load_token($1, type, line_no, current_scope)) {
 				char buf[50]; sprintf(buf, "redeclaration of %s", $1);
 				yyerror(buf);
 				YYABORT;
@@ -91,7 +91,7 @@ varDeclId : ID	{
        		printf("%s%s", $1, $2);
 			char type[20] = {0};
 			sprintf(type, "%s*", (strcmp($<str>-1, ",") ? $<str>-1 : $<str>-4));
-			if(load_token($2, type, line_no, current_scope, parent_scope)) {
+			if(load_token($2, type, line_no, current_scope)) {
 				char buf[50]; sprintf(buf, "redeclaration of %s", $2);
 				yyerror(buf);
 				YYABORT;
@@ -116,6 +116,7 @@ compoundStmt : OPEN_FLOWER {
 			parent_scope = scope_stack[scope_stack_top - 1];
 			scope_stack[scope_stack_top++] = ++num_scope;
 			current_scope = num_scope;
+			set_parent_scope(current_scope, parent_scope);
 		} statementList CLOSE_FLOWER {
 			current_scope = parent_scope;
 			--scope_stack_top;
@@ -323,6 +324,7 @@ void yyerror(const char *error_msg) {
 }
 
 int main() {
+	set_parent_scope(0, -1);
 	if (!yyparse()) {
 		printf("\n\nClean code after removing comments :-> \n");
 		printf("**********************************************\n");

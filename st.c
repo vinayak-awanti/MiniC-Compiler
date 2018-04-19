@@ -3,7 +3,7 @@
 extern int num_scope;
 
 // returns 0 if token was successfully inserted, 1 otherwise.
-int load_token(char *name, char *type, int line, int scope, int parent_scope){
+int load_token(char *name, char *type, int line, int scope){
 	int i;
 	
 	// return 1 if token already exists. redeclaration.
@@ -19,7 +19,6 @@ int load_token(char *name, char *type, int line, int scope, int parent_scope){
 	strcpy(symbol_table[scope].token[tmp_size].name, name);
 	strcpy(symbol_table[scope].token[tmp_size].type, type);
 	symbol_table[scope].token[tmp_size].line = line;
-	symbol_table[scope].parent_scope = parent_scope;
 	++symbol_table[scope].st_size;
 	
 	return 0;
@@ -50,6 +49,10 @@ char *get_value(char *id, int current_scope) {
 		current_scope = symbol_table[current_scope].parent_scope;
 	}
 	return NULL;
+}
+
+void set_parent_scope(int current_scope, int parent_scope) {
+	symbol_table[current_scope].parent_scope = parent_scope;
 }
 
 /*int fetch_token(char *key){*/
