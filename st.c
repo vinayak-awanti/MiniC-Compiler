@@ -1,5 +1,7 @@
 #include "st.h"
 
+extern int num_scope;
+
 // returns 0 if token was successfully inserted, 1 otherwise.
 int load_token(char *name, char *type, int line, int scope, int parent_scope){
 	int i;
@@ -23,6 +25,33 @@ int load_token(char *name, char *type, int line, int scope, int parent_scope){
 	return 0;
 }
 
+int set_value(char* id, char *value, int current_scope) {
+	while (current_scope != -1) {
+		for (int i = 0; i < symbol_table[current_scope].st_size; ++i) {
+			if (!strcmp(id, symbol_table[current_scope].token[i].name)) {
+				strcpy(symbol_table[current_scope].token[i].value, value);
+				return 0;
+			}
+		}
+		current_scope = symbol_table[current_scope].parent_scope;
+	}
+	return 1;
+}
+
+char *get_value(char *id, int current_scope) {
+	while (current_scope != -1) {
+		for (int i = 0; i < symbol_table[current_scope].st_size; ++i) {
+			if (!strcmp(id, symbol_table[current_scope].token[i].name)) {
+				if (strlen(symbol_table[current_scope].token[i].value)) {
+					return strdup(symbol_table[current_scope].token[i].value);
+				}
+			}
+		}
+		current_scope = symbol_table[current_scope].parent_scope;
+	}
+	return NULL;
+}
+
 /*int fetch_token(char *key){*/
 /*	int i, flag = -1;*/
 
@@ -37,13 +66,15 @@ int load_token(char *name, char *type, int line, int scope, int parent_scope){
 
 void show_me(){
 	int i, j;
-	for (i = 0; i < 10; ++i) {
+	for (i = 0; i <= num_scope; ++i) {
 		printf("Scope: %d\tParent scope: %d\n", i, symbol_table[i].parent_scope);
-		printf("|        Token-No |            Name |            Type |         Line-No |\n");
-		printf("-------------------------------------------------------------------------\n");	
+		printf("-------------------------------------------------------------------------------------------\n");
+		printf("|        Token-No |            Name |            Type |         Line-No |           Value |\n");
+		printf("-------------------------------------------------------------------------------------------\n");	
 		for (j = 0; j < symbol_table[i].st_size; ++j) {
-			printf("| %15d | %15s | %15s | %15d |\n", j, symbol_table[i].token[j].name, symbol_table[i].token[j].type, symbol_table[i].token[j].line);
+			printf("| %15d | %15s | %15s | %15d | %15s |\n", j + 1, symbol_table[i].token[j].name, symbol_table[i].token[j].type, symbol_table[i].token[j].line, symbol_table[i].token[j].value);
 		}
+		printf("-------------------------------------------------------------------------------------------\n");
 		printf("\n");
 	}
 }

@@ -24,6 +24,8 @@ sym_t symbol_table[10];
 
 int fetch_token(char*);
 int load_token(char*, char*, int, int, int);
+int set_value(char*, char*, int);
+char *get_value(char*, int);
 void show_me();
 extern char code[1024];
 extern int line_no;
