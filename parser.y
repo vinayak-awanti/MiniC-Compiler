@@ -4,6 +4,7 @@
 #include "st.h"
 void yyerror(const char *error_msg);
 int yylex();
+
 void func4();
 void func1(char *s);
 void func2(char *s);
@@ -20,6 +21,7 @@ int scope_stack[50];
 
 static int temp_nb;
 char* new_temp();
+int is_number(char *num);
 
 %}
 %union {
@@ -44,13 +46,18 @@ headerDeclaration : INCLUDE
                   ;
 mainDeclaration : INT_MAIN statement
                 ;
-varDeclaration : typeSpecifier {printf("%s ", $1);} varDeclList SEMI_COLON {printf(";\n");}
+varDeclaration : typeSpecifier {printf("%s ", $1);} varDeclList SEMI_COLON {printf("\n");}
                ;
 varDeclList : varDeclList COMMA {printf(", ");} varDeclInitialize {}
             | varDeclInitialize
             ;
 varDeclInitialize : varDeclId				
-                  | varDeclId EQUAL simpleExpression
+                  | varDeclId EQUAL simpleExpression {
+                 	printf(" = %s", $3);
+                 	if (is_number($3)) {
+                 		set_value($1, $3, current_scope);
+                 	}
+                 }
                   ;
 varDeclId : ID	{
 			printf("%s", $1);
@@ -140,25 +147,124 @@ returnStmt : RETURN SEMI_COLON
            ;
 breakStmt : BREAK SEMI_COLON
           ;
-expression : mutable EQUAL expression			{printf("%s %s %s;\n", $1, $2, $3);}
-           | mutable PLUS_EQUAL expression		{printf("%s %s %s;\n", $1, $2, $3);}
-           | mutable MINUS_EQUAL expression		{printf("%s %s %s;\n", $1, $2, $3);}
-           | mutable MUL_EQUAL expression		{printf("%s %s %s;\n", $1, $2, $3);}
-           | mutable DIV_EQUAL expression		{printf("%s %s %s;\n", $1, $2, $3);}
-           | mutable PLUS_PLUS					{printf("%s %s;\n", $1, $2);}
-           | mutable MINUS_MINUS				{printf("%s %s;\n", $1, $2);}
+expression : mutable EQUAL expression {
+	
+	printf("%s %s %s\n", $1, $2, $3);
+	
+	if (is_number($3)) {
+		set_value($1, $3, current_scope);
+	}
+}
+           | mutable PLUS_EQUAL expression {
+	
+	printf("%s %s %s\n", $1, $2, $3);
+	if (is_number($3)) {
+		char *value = get_value($1, current_scope);
+		if (value == NULL) {
+			printf("variable %s unitialized\n", $1);
+			YYABORT;
+		}
+		char *res = malloc(20);
+		sprintf(res, "%d", atoi(value) + atoi($3));
+		set_value($1, res, current_scope);
+		free(res);
+	}
+}
+           | mutable MINUS_EQUAL expression {
+
+	printf("%s %s %s\n", $1, $2, $3);
+	
+	if (is_number($3)) {
+		char *value = get_value($1, current_scope);
+		if (value == NULL) {
+			printf("variable %s unitialized\n", $1);
+			YYABORT;
+		}
+		char *res = malloc(20);
+		sprintf(res, "%d", atoi(value) - atoi($3));
+		set_value($1, res, current_scope);
+		free(res);
+	}
+}
+           | mutable MUL_EQUAL expression {
+
+	printf("%s %s %s\n", $1, $2, $3);
+	
+	if (is_number($3)) {
+		char *value = get_value($1, current_scope);
+		if (value == NULL) {
+			printf("variable %s unitialized\n", $1);
+			YYABORT;
+		}
+		char *res = malloc(20);
+		sprintf(res, "%d", atoi(value) * atoi($3));
+		set_value($1, res, current_scope);
+		free(res);
+	}
+}
+           | mutable DIV_EQUAL expression {
+           
+	printf("%s %s %s\n", $1, $2, $3);
+	
+	if (is_number($3)) {
+		if (atoi($3) == 0) {
+			printf("division by zero\n");
+			YYABORT;
+		}
+		char *value = get_value($1, current_scope);
+		if (value == NULL) {
+			printf("variable %s unitialized\n", $1);
+			YYABORT;
+		}
+		char *res = malloc(20);
+		sprintf(res, "%d", atoi(value) / atoi($3));
+		set_value($1, res, current_scope);
+		free(res);
+	}
+}
+           | mutable PLUS_PLUS {
+	
+	$$ = new_temp();
+	printf("%s = %s + 1\n", $$, $1);
+	printf("%s = %s\n", $1, $$);
+	
+	char *value = get_value($1, current_scope);
+	if (value == NULL) {
+		printf("variable %s unitialized\n", $1);
+		YYABORT;
+	}
+	char *res = malloc(20);
+	sprintf(res, "%d", atoi(value) + 1);
+	set_value($1, res, current_scope);
+	free(res);
+} 
+           | mutable MINUS_MINUS {
+	$$ = new_temp();
+	printf("%s = %s - 1\n", $$, $1);
+	printf("%s = %s\n", $1, $$);
+	
+	char *value = get_value($1, current_scope);
+	if (value == NULL) {
+		printf("variable %s unitialized\n", $1);
+		YYABORT;
+	}
+	char *res = malloc(20);
+	sprintf(res, "%d", atoi(value) - 1);
+	set_value($1, res, current_scope);
+	free(res);
+}
            | simpleExpression					{}
            ;
-simpleExpression : simpleExpression LOGIC_OR andExpression	{$$ = new_temp(); printf("%s = %s %s %s;\n", $$, $1, $2, $3);}
+simpleExpression : simpleExpression LOGIC_OR andExpression	{$$ = new_temp(); printf("%s = %s %s %s\n", $$, $1, $2, $3);}
                  | andExpression
                  ;
-andExpression : andExpression LOGIC_AND unaryRelExpression	{$$ = new_temp(); printf("%s = %s %s %s;\n", $$, $1, $2, $3);}
+andExpression : andExpression LOGIC_AND unaryRelExpression	{$$ = new_temp(); printf("%s = %s %s %s\n", $$, $1, $2, $3);}
               | unaryRelExpression
               ;
-unaryRelExpression : NOT unaryRelExpression			{$$ = new_temp(); printf("%s = %s %s;\n", $$, $1, $2);}
+unaryRelExpression : NOT unaryRelExpression			{$$ = new_temp(); printf("%s = %s %s\n", $$, $1, $2);}
                    | relExpression
                    ;
-relExpression : sumExpression relop sumExpression	{$$ = new_temp(); printf("%s = %s %s %s;\n", $$, $1, $2, $3);}
+relExpression : sumExpression relop sumExpression	{$$ = new_temp(); printf("%s = %s %s %s\n", $$, $1, $2, $3);}
               | sumExpression
               ;
 relop : LESS_EQUAL
@@ -168,20 +274,20 @@ relop : LESS_EQUAL
       | EQUAL_EQUAL
       | NOT_EQUAL
       ;
-sumExpression : sumExpression sumop term	{$$ = new_temp(); printf("%s = %s %s %s;\n", $$, $1, $2, $3);}
+sumExpression : sumExpression sumop term	{$$ = new_temp(); printf("%s = %s %s %s\n", $$, $1, $2, $3);}
               | term
               ;
 sumop : PLUS
       | MINUS
       ;
-term : term mulop unaryExpression			{$$ = new_temp(); printf("%s = %s %s %s;\n", $$, $1, $2, $3);}
+term : term mulop unaryExpression			{$$ = new_temp(); printf("%s = %s %s %s\n", $$, $1, $2, $3);}
      | unaryExpression
      ;
 mulop : STAR
       | DIV
       | MOD
       ;
-unaryExpression : unaryop unaryExpression	{$$ = new_temp(); printf("%s = %s%s;\n", $$, $1, $2);}
+unaryExpression : unaryop unaryExpression	{$$ = new_temp(); printf("%s = %s%s\n", $$, $1, $2);}
                 | factor
                 ;
 unaryop : MINUS
@@ -222,10 +328,8 @@ int main() {
 		printf("**********************************************\n");
 		printf("\n%s\n",code);
 		printf("**********************************************\n\n\n");
-		printf("Symbol Table :->\n");
-		printf("----------------------------------------------\n");
+		printf("Symbol Table :->\n\n");
 		show_me();
-		printf("\n-----------------------------------------------\n");
 		printf("successful\n");
 	} else {
 		printf("unsuccessful\n");
@@ -258,4 +362,8 @@ void func3( char *s) {
 void func4(){
 	int y=labels[label_top-1];
 	printf("goto L%d\n",y);
+}
+
+int is_number(char *num) {
+	return (strcmp("0", num) == 0 || atoi(num));
 }

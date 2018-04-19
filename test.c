@@ -10,31 +10,29 @@ int main() {
 	while (a < b) {
 		if (2<3) {
 			int z= 20;
+			z = 30;
+			a += 50;
 		} 
 		else {
 			int y =10;	
+			y++;
 		}
 	}
+	a /= 10;
+	a--;
+	
+	
 
 	int arr[10], barr[10][10];
 	{
 		int *p, a, *ptr;
 	}
-	{
-		int b, c; 
-		{
-			char d, e;
-		}
-		{
-			char f, g;
-		}
-		int x;
-	}
+	
 	if(1<2){
 		int inif;
 	}
 	else {
-		int inelse;
+		int inelse = 0;
 	}
 	return 0;
 }
