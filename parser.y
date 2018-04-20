@@ -35,7 +35,7 @@ int is_number(char *num);
 
 program : declarationList
         ;
-declarationList : declarationList declarationList
+declarationList : declarationList declaration
                 | declaration
                 ;
 declaration : varDeclaration
@@ -46,56 +46,55 @@ headerDeclaration : INCLUDE
                   ;
 mainDeclaration : INT_MAIN statement
                 ;
-varDeclaration : typeSpecifier {printf("%s ", $1);} varDeclList SEMI_COLON {printf("\n");}
+varDeclaration : typeSpecifier varDeclList SEMI_COLON {printf("%s %s \n", $1, $2);}
                ;
-varDeclList : varDeclList COMMA {printf(", ");} varDeclInitialize {}
-            | varDeclInitialize
+varDeclList : varDeclList COMMA varDeclInitialize {sprintf($$, "%s, %s", $1, $3);}
+            | varDeclInitialize {sprintf($$, "%s", $1);}
             ;
 varDeclInitialize : varDeclId				
                   | varDeclId EQUAL simpleExpression {
-                 	printf(" = %s", $3);
                  	if (is_number($3)) {
                  		set_value($1, $3, current_scope);
                  	}
+                 	sprintf($$, "%s = %s", $1, $3);
                  }
                   ;
 varDeclId : ID	{
-			printf("%s", $1);
-			if(load_token($1, (strcmp($<str>-1, ",") ? $<str>-1 : $<str>-4), line_no, current_scope)) {
-				char buf[50]; sprintf(buf, "redeclaration of %s", $1);
-				yyerror(buf);
-				YYABORT;
-			}
+		if(load_token($1, (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), line_no, current_scope)) {
+			char buf[50]; sprintf(buf, "redeclaration of %s", $1);
+			yyerror(buf);
+			YYABORT;
 		}
+	}
           | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE {
-          	printf("%s%s%s%s", $1, $2, $3, $4);
-			char type[20] = {0};
-			sprintf(type, "%s[%s]", (strcmp($<str>-1, ",") ? $<str>-1 : $<str>-4), $3);
-			if(load_token($1, type, line_no, current_scope)) {
-				char buf[50]; sprintf(buf, "redeclaration of %s", $1);
-				yyerror(buf);
-				YYABORT;
-			}
-          	}
+		char type[20] = {0};
+		sprintf(type, "%s[%s]", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), $3);
+		if(load_token($1, type, line_no, current_scope)) {
+			char buf[50]; sprintf(buf, "redeclaration of %s", $1);
+			yyerror(buf);
+			YYABORT;
+		}
+		sprintf($$, "%s%s%s%s", $1, $2, $3, $4);
+          }
           | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE OPEN_SQUARE NUMCONST CLOSE_SQUARE {
-          		printf("%s%s%s%s%s%s%s", $1, $2, $3, $4, $5, $6, $7);
-          		char type[20] = {0};
-          		sprintf(type, "%s[%s][%s]", (strcmp($<str>-1, ",") ? $<str>-1 : $<str>-4), $3, $6);
-          		if(load_token($1, type, line_no, current_scope)) {
-				char buf[50]; sprintf(buf, "redeclaration of %s", $1);
-				yyerror(buf);
-				YYABORT;
-			}
-          	}	
+  		char type[20] = {0};
+  		sprintf(type, "%s[%s][%s]", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), $3, $6);
+  		if(load_token($1, type, line_no, current_scope)) {
+			char buf[50]; sprintf(buf, "redeclaration of %s", $1);
+			yyerror(buf);
+			YYABORT;
+		}
+		sprintf($$, "%s%s%s%s%s%s%s", $1, $2, $3, $4, $5, $6, $7);
+          }	
           | STAR ID {
-       		printf("%s%s", $1, $2);
-			char type[20] = {0};
-			sprintf(type, "%s*", (strcmp($<str>-1, ",") ? $<str>-1 : $<str>-4));
-			if(load_token($2, type, line_no, current_scope)) {
-				char buf[50]; sprintf(buf, "redeclaration of %s", $2);
-				yyerror(buf);
-				YYABORT;
-			}         	
+		char type[20] = {0};
+		sprintf(type, "%s*", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2));
+		if(load_token($2, type, line_no, current_scope)) {
+			char buf[50]; sprintf(buf, "redeclaration of %s", $2);
+			yyerror(buf);
+			YYABORT;
+		}
+		sprintf($$, "%s%s", $1, $2);
           }
           ;
 typeSpecifier : INT
@@ -158,7 +157,9 @@ expression : mutable EQUAL expression {
 }
            | mutable PLUS_EQUAL expression {
 	
-	printf("%s %s %s\n", $1, $2, $3);
+	$$ = new_temp();
+	printf("%s = %s + %s\n", $$, $1, $3);
+	printf("%s = %s\n", $1, $$);
 	if (is_number($3)) {
 		char *value = get_value($1, current_scope);
 		if (value == NULL) {
@@ -173,7 +174,9 @@ expression : mutable EQUAL expression {
 }
            | mutable MINUS_EQUAL expression {
 
-	printf("%s %s %s\n", $1, $2, $3);
+	$$ = new_temp();
+	printf("%s = %s - %s\n", $$, $1, $3);
+	printf("%s = %s\n", $1, $$);
 	
 	if (is_number($3)) {
 		char *value = get_value($1, current_scope);
@@ -189,7 +192,9 @@ expression : mutable EQUAL expression {
 }
            | mutable MUL_EQUAL expression {
 
-	printf("%s %s %s\n", $1, $2, $3);
+	$$ = new_temp();
+	printf("%s = %s * %s\n", $$, $1, $3);
+	printf("%s = %s\n", $1, $$);
 	
 	if (is_number($3)) {
 		char *value = get_value($1, current_scope);
@@ -205,7 +210,9 @@ expression : mutable EQUAL expression {
 }
            | mutable DIV_EQUAL expression {
            
-	printf("%s %s %s\n", $1, $2, $3);
+	$$ = new_temp();
+	printf("%s = %s / %s\n", $$, $1, $3);
+	printf("%s = %s\n", $1, $$);
 	
 	if (is_number($3)) {
 		if (atoi($3) == 0) {
@@ -297,9 +304,22 @@ unaryop : MINUS
 factor : immutable
        | mutable
        ;
-mutable : ID
-        | mutable OPEN_SQUARE expression CLOSE_SQUARE
-        | mutable OPEN_SQUARE expression CLOSE_SQUARE OPEN_SQUARE expression CLOSE_SQUARE
+mutable : ID {
+	if (fetch_token($1, current_scope)) {
+		printf("undeclared variable %s\n", $1);
+		YYABORT;
+	}
+}
+        | mutable OPEN_SQUARE expression CLOSE_SQUARE {
+        	if (fetch_token($1, current_scope)) {
+        		printf("undeclared variable %s\n", $1);
+        		YYABORT;
+        	}
+		char *idx = new_temp();
+		printf("%s = 4 * %s\n", idx, $3);
+		$$ = new_temp();
+		sprintf($$, "%s[%s]", $1, idx);
+        }
         ;
 immutable : OPEN_SIMPLE expression CLOSE_SIMPLE
           | constant
@@ -352,7 +372,7 @@ void func2( char *s ) {
 	label_num++;
 	int x = labels[label_top--];
 	printf("goto L%d\n",label_num);
-	printf("L%d : \n",x);
+	printf("L%d: \n",x);
 	labels[++label_top] = label_num;	
 }
 

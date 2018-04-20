@@ -20,9 +20,9 @@ typedef struct sym_t {
 	token_t token[100];
 } sym_t;
 
-sym_t symbol_table[10];
+sym_t symbol_table[30];
 
-int fetch_token(char*);
+int fetch_token(char*, int);
 int load_token(char*, char*, int, int);
 int set_value(char*, char*, int);
 char *get_value(char*, int);
