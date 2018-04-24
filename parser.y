@@ -6,6 +6,7 @@ void yyerror(const char *error_msg);
 int yylex();
 
 void func4();
+void func5();
 void func1(char *s);
 void func2(char *s);
 void func3(char *s);
@@ -140,9 +141,9 @@ argList : argList COMMA expression
 expressionStmt : expression SEMI_COLON
                | SEMI_COLON
                ;
-selectionStmt : IF OPEN_SIMPLE simpleExpression {$<str>3=new_temp();func1($<str>3);} CLOSE_SIMPLE statement {func2($<str>6);} ELSE statement {func3($<str>9);}
+selectionStmt : IF OPEN_SIMPLE simpleExpression {func1($<str>3);} CLOSE_SIMPLE statement {func2($<str>6);} ELSE statement {func3($<str>9);}
               ;
-iterationStmt : WHILE {fprintf(ic_file, "L%d:\n",label_num);label_num+=1;} OPEN_SIMPLE simpleExpression {func1($<str>4);} CLOSE_SIMPLE statement {func4();func3($<str>6);} 
+iterationStmt : WHILE {fprintf(ic_file,"L%d:\n",label_num+1);} OPEN_SIMPLE simpleExpression {func4($<str>4);} CLOSE_SIMPLE statement {func5();} 
 returnStmt : RETURN SEMI_COLON
            | RETURN expression SEMI_COLON
            ;
@@ -381,15 +382,29 @@ void func2( char *s ) {
 }
 
 void func3( char *s) {
-	int y = labels[label_top--];
+	int y = labels[label_top];
+	label_top--;
 	fprintf(ic_file, "L%d: \n",y); 
 }
 
-void func4(){
-	int y=labels[label_top-1];
-	fprintf(ic_file, "goto L%d\n",y);
-}
 
 int is_number(char *num) {
 	return (strcmp("0", num) == 0 || atoi(num));
+}
+
+void func4(char * s) {
+
+	char * temp = new_temp();
+	fprintf(ic_file, "%s = not %s\n", temp, s);
+	fprintf(ic_file, "if %s goto L%d\n", temp, label_num + 2);
+	labels[++label_top] = label_num + 2;
+	labels[++label_top] = label_num + 1;   
+	label_num += 2;
+}
+
+void func5() {
+	fprintf(ic_file,"goto L%d\n",labels[label_top]);
+	label_top--;
+	fprintf(ic_file, "L%d:\n",labels[label_top]);
+	label_top--;
 }
