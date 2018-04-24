@@ -23,6 +23,7 @@ static int temp_nb;
 char* new_temp();
 int is_number(char *num);
 
+FILE *ic_file;
 %}
 %union {
     char *str;
@@ -35,7 +36,7 @@ int is_number(char *num);
 
 program : declarationList
         ;
-declarationList : declarationList declarationList
+declarationList : declarationList declaration
                 | declaration
                 ;
 declaration : varDeclaration
@@ -46,56 +47,55 @@ headerDeclaration : INCLUDE
                   ;
 mainDeclaration : INT_MAIN statement
                 ;
-varDeclaration : typeSpecifier {printf("%s ", $1);} varDeclList SEMI_COLON {printf("\n");}
+varDeclaration : typeSpecifier varDeclList SEMI_COLON {fprintf(ic_file, "%s %s \n", $1, $2);}
                ;
-varDeclList : varDeclList COMMA {printf(", ");} varDeclInitialize {}
-            | varDeclInitialize
+varDeclList : varDeclList COMMA varDeclInitialize {sprintf($$, "%s, %s", $1, $3);}
+            | varDeclInitialize {sprintf($$, "%s", $1);}
             ;
 varDeclInitialize : varDeclId				
                   | varDeclId EQUAL simpleExpression {
-                 	printf(" = %s", $3);
                  	if (is_number($3)) {
                  		set_value($1, $3, current_scope);
                  	}
+                 	sprintf($$, "%s = %s", $1, $3);
                  }
                   ;
 varDeclId : ID	{
-			printf("%s", $1);
-			if(load_token($1, (strcmp($<str>-1, ",") ? $<str>-1 : $<str>-4), line_no, current_scope)) {
-				char buf[50]; sprintf(buf, "redeclaration of %s", $1);
-				yyerror(buf);
-				YYABORT;
-			}
+		if(load_token($1, (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), line_no, current_scope)) {
+			char buf[50]; sprintf(buf, "redeclaration of %s", $1);
+			yyerror(buf);
+			YYABORT;
 		}
+	}
           | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE {
-          	printf("%s%s%s%s", $1, $2, $3, $4);
-			char type[20] = {0};
-			sprintf(type, "%s[%s]", (strcmp($<str>-1, ",") ? $<str>-1 : $<str>-4), $3);
-			if(load_token($1, type, line_no, current_scope)) {
-				char buf[50]; sprintf(buf, "redeclaration of %s", $1);
-				yyerror(buf);
-				YYABORT;
-			}
-          	}
+		char type[20] = {0};
+		sprintf(type, "%s[%s]", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), $3);
+		if(load_token($1, type, line_no, current_scope)) {
+			char buf[50]; sprintf(buf, "redeclaration of %s", $1);
+			yyerror(buf);
+			YYABORT;
+		}
+		sprintf($$, "%s%s%s%s", $1, $2, $3, $4);
+          }
           | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE OPEN_SQUARE NUMCONST CLOSE_SQUARE {
-          		printf("%s%s%s%s%s%s%s", $1, $2, $3, $4, $5, $6, $7);
-          		char type[20] = {0};
-          		sprintf(type, "%s[%s][%s]", (strcmp($<str>-1, ",") ? $<str>-1 : $<str>-4), $3, $6);
-          		if(load_token($1, type, line_no, current_scope)) {
-				char buf[50]; sprintf(buf, "redeclaration of %s", $1);
-				yyerror(buf);
-				YYABORT;
-			}
-          	}	
+  		char type[20] = {0};
+  		sprintf(type, "%s[%s][%s]", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), $3, $6);
+  		if(load_token($1, type, line_no, current_scope)) {
+			char buf[50]; sprintf(buf, "redeclaration of %s", $1);
+			yyerror(buf);
+			YYABORT;
+		}
+		sprintf($$, "%s%s%s%s%s%s%s", $1, $2, $3, $4, $5, $6, $7);
+          }	
           | STAR ID {
-       		printf("%s%s", $1, $2);
-			char type[20] = {0};
-			sprintf(type, "%s*", (strcmp($<str>-1, ",") ? $<str>-1 : $<str>-4));
-			if(load_token($2, type, line_no, current_scope)) {
-				char buf[50]; sprintf(buf, "redeclaration of %s", $2);
-				yyerror(buf);
-				YYABORT;
-			}         	
+		char type[20] = {0};
+		sprintf(type, "%s*", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2));
+		if(load_token($2, type, line_no, current_scope)) {
+			char buf[50]; sprintf(buf, "redeclaration of %s", $2);
+			yyerror(buf);
+			YYABORT;
+		}
+		sprintf($$, "%s%s", $1, $2);
           }
           ;
 typeSpecifier : INT
@@ -142,7 +142,7 @@ expressionStmt : expression SEMI_COLON
                ;
 selectionStmt : IF OPEN_SIMPLE simpleExpression {$<str>3=new_temp();func1($<str>3);} CLOSE_SIMPLE statement {func2($<str>6);} ELSE statement {func3($<str>9);}
               ;
-iterationStmt : WHILE {printf("L%d:\n",label_num);label_num+=1;} OPEN_SIMPLE simpleExpression {func1($<str>4);} CLOSE_SIMPLE statement {func4();func3($<str>6);} 
+iterationStmt : WHILE {fprintf(ic_file, "L%d:\n",label_num);label_num+=1;} OPEN_SIMPLE simpleExpression {func1($<str>4);} CLOSE_SIMPLE statement {func4();func3($<str>6);} 
 returnStmt : RETURN SEMI_COLON
            | RETURN expression SEMI_COLON
            ;
@@ -150,7 +150,7 @@ breakStmt : BREAK SEMI_COLON
           ;
 expression : mutable EQUAL expression {
 	
-	printf("%s %s %s\n", $1, $2, $3);
+	fprintf(ic_file, "%s %s %s\n", $1, $2, $3);
 	
 	if (is_number($3)) {
 		set_value($1, $3, current_scope);
@@ -158,7 +158,9 @@ expression : mutable EQUAL expression {
 }
            | mutable PLUS_EQUAL expression {
 	
-	printf("%s %s %s\n", $1, $2, $3);
+	$$ = new_temp();
+	fprintf(ic_file, "%s = %s + %s\n", $$, $1, $3);
+	fprintf(ic_file, "%s = %s\n", $1, $$);
 	if (is_number($3)) {
 		char *value = get_value($1, current_scope);
 		if (value == NULL) {
@@ -173,7 +175,9 @@ expression : mutable EQUAL expression {
 }
            | mutable MINUS_EQUAL expression {
 
-	printf("%s %s %s\n", $1, $2, $3);
+	$$ = new_temp();
+	fprintf(ic_file, "%s = %s - %s\n", $$, $1, $3);
+	fprintf(ic_file, "%s = %s\n", $1, $$);
 	
 	if (is_number($3)) {
 		char *value = get_value($1, current_scope);
@@ -189,7 +193,9 @@ expression : mutable EQUAL expression {
 }
            | mutable MUL_EQUAL expression {
 
-	printf("%s %s %s\n", $1, $2, $3);
+	$$ = new_temp();
+	fprintf(ic_file, "%s = %s * %s\n", $$, $1, $3);
+	fprintf(ic_file, "%s = %s\n", $1, $$);
 	
 	if (is_number($3)) {
 		char *value = get_value($1, current_scope);
@@ -205,7 +211,9 @@ expression : mutable EQUAL expression {
 }
            | mutable DIV_EQUAL expression {
            
-	printf("%s %s %s\n", $1, $2, $3);
+	$$ = new_temp();
+	fprintf(ic_file, "%s = %s / %s\n", $$, $1, $3);
+	fprintf(ic_file, "%s = %s\n", $1, $$);
 	
 	if (is_number($3)) {
 		if (atoi($3) == 0) {
@@ -226,8 +234,8 @@ expression : mutable EQUAL expression {
            | mutable PLUS_PLUS {
 	
 	$$ = new_temp();
-	printf("%s = %s + 1\n", $$, $1);
-	printf("%s = %s\n", $1, $$);
+	fprintf(ic_file, "%s = %s + 1\n", $$, $1);
+	fprintf(ic_file, "%s = %s\n", $1, $$);
 	
 	char *value = get_value($1, current_scope);
 	if (value == NULL) {
@@ -241,8 +249,8 @@ expression : mutable EQUAL expression {
 } 
            | mutable MINUS_MINUS {
 	$$ = new_temp();
-	printf("%s = %s - 1\n", $$, $1);
-	printf("%s = %s\n", $1, $$);
+	fprintf(ic_file, "%s = %s - 1\n", $$, $1);
+	fprintf(ic_file, "%s = %s\n", $1, $$);
 	
 	char *value = get_value($1, current_scope);
 	if (value == NULL) {
@@ -256,16 +264,16 @@ expression : mutable EQUAL expression {
 }
            | simpleExpression					{}
            ;
-simpleExpression : simpleExpression LOGIC_OR andExpression	{$$ = new_temp(); printf("%s = %s %s %s\n", $$, $1, $2, $3);}
+simpleExpression : simpleExpression LOGIC_OR andExpression	{$$ = new_temp(); fprintf(ic_file, "%s = %s %s %s\n", $$, $1, $2, $3);}
                  | andExpression
                  ;
-andExpression : andExpression LOGIC_AND unaryRelExpression	{$$ = new_temp(); printf("%s = %s %s %s\n", $$, $1, $2, $3);}
+andExpression : andExpression LOGIC_AND unaryRelExpression	{$$ = new_temp(); fprintf(ic_file, "%s = %s %s %s\n", $$, $1, $2, $3);}
               | unaryRelExpression
               ;
-unaryRelExpression : NOT unaryRelExpression			{$$ = new_temp(); printf("%s = %s %s\n", $$, $1, $2);}
+unaryRelExpression : NOT unaryRelExpression			{$$ = new_temp(); fprintf(ic_file, "%s = %s %s\n", $$, $1, $2);}
                    | relExpression
                    ;
-relExpression : sumExpression relop sumExpression	{$$ = new_temp(); printf("%s = %s %s %s\n", $$, $1, $2, $3);}
+relExpression : sumExpression relop sumExpression	{$$ = new_temp(); fprintf(ic_file, "%s = %s %s %s\n", $$, $1, $2, $3);}
               | sumExpression
               ;
 relop : LESS_EQUAL
@@ -275,20 +283,20 @@ relop : LESS_EQUAL
       | EQUAL_EQUAL
       | NOT_EQUAL
       ;
-sumExpression : sumExpression sumop term	{$$ = new_temp(); printf("%s = %s %s %s\n", $$, $1, $2, $3);}
+sumExpression : sumExpression sumop term	{$$ = new_temp(); fprintf(ic_file, "%s = %s %s %s\n", $$, $1, $2, $3);}
               | term
               ;
 sumop : PLUS
       | MINUS
       ;
-term : term mulop unaryExpression			{$$ = new_temp(); printf("%s = %s %s %s\n", $$, $1, $2, $3);}
+term : term mulop unaryExpression			{$$ = new_temp(); fprintf(ic_file, "%s = %s %s %s\n", $$, $1, $2, $3);}
      | unaryExpression
      ;
 mulop : STAR
       | DIV
       | MOD
       ;
-unaryExpression : unaryop unaryExpression	{$$ = new_temp(); printf("%s = %s%s\n", $$, $1, $2);}
+unaryExpression : unaryop unaryExpression	{$$ = new_temp(); fprintf(ic_file, "%s = %s%s\n", $$, $1, $2);}
                 | factor
                 ;
 unaryop : MINUS
@@ -297,11 +305,24 @@ unaryop : MINUS
 factor : immutable
        | mutable
        ;
-mutable : ID
-        | mutable OPEN_SQUARE expression CLOSE_SQUARE
-        | mutable OPEN_SQUARE expression CLOSE_SQUARE OPEN_SQUARE expression CLOSE_SQUARE
+mutable : ID {
+	if (fetch_token($1, current_scope)) {
+		printf("undeclared variable %s\n", $1);
+		YYABORT;
+	}
+}
+        | mutable OPEN_SQUARE expression CLOSE_SQUARE {
+        	if (fetch_token($1, current_scope)) {
+        		printf("undeclared variable %s\n", $1);
+        		YYABORT;
+        	}
+		char *idx = new_temp();
+		fprintf(ic_file, "%s = 4 * %s\n", idx, $3);
+		$$ = new_temp();
+		sprintf($$, "%s[%s]", $1, idx);
+        }
         ;
-immutable : OPEN_SIMPLE expression CLOSE_SIMPLE
+immutable : OPEN_SIMPLE expression CLOSE_SIMPLE	{$$ = $2;}
           | constant
           ;
 constant : NUMCONST
@@ -325,6 +346,8 @@ void yyerror(const char *error_msg) {
 
 int main() {
 	set_parent_scope(0, -1);
+	ic_file = fopen("ic", "w");
+	
 	if (!yyparse()) {
 		printf("\n\nClean code after removing comments :-> \n");
 		printf("**********************************************\n");
@@ -336,14 +359,15 @@ int main() {
 	} else {
 		printf("unsuccessful\n");
 	}
+	fclose(ic_file);
 	return 0;
 }
 
 void func1( char *s ) {
 	label_num++;
 	char * temp = new_temp();
-	printf("%s = not %s\n", temp, s);
-	printf("if %s goto L%d\n", temp, label_num);
+	fprintf(ic_file, "%s = not %s\n", temp, s);
+	fprintf(ic_file, "if %s goto L%d\n", temp, label_num);
 	labels[++label_top]=label_num;
 }
 
@@ -351,19 +375,19 @@ void func1( char *s ) {
 void func2( char *s ) {
 	label_num++;
 	int x = labels[label_top--];
-	printf("goto L%d\n",label_num);
-	printf("L%d : \n",x);
+	fprintf(ic_file, "goto L%d\n",label_num);
+	fprintf(ic_file, "L%d: \n",x);
 	labels[++label_top] = label_num;	
 }
 
 void func3( char *s) {
 	int y = labels[label_top--];
-	printf("L%d: \n",y); 
+	fprintf(ic_file, "L%d: \n",y); 
 }
 
 void func4(){
 	int y=labels[label_top-1];
-	printf("goto L%d\n",y);
+	fprintf(ic_file, "goto L%d\n",y);
 }
 
 int is_number(char *num) {

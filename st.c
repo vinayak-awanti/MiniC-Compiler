@@ -24,10 +24,10 @@ int load_token(char *name, char *type, int line, int scope){
 	return 0;
 }
 
-int set_value(char* id, char *value, int current_scope) {
+int set_value(char* name, char *value, int current_scope) {
 	while (current_scope != -1) {
 		for (int i = 0; i < symbol_table[current_scope].st_size; ++i) {
-			if (!strcmp(id, symbol_table[current_scope].token[i].name)) {
+			if (!strcmp(name, symbol_table[current_scope].token[i].name)) {
 				strcpy(symbol_table[current_scope].token[i].value, value);
 				return 0;
 			}
@@ -37,10 +37,10 @@ int set_value(char* id, char *value, int current_scope) {
 	return 1;
 }
 
-char *get_value(char *id, int current_scope) {
+char *get_value(char *name, int current_scope) {
 	while (current_scope != -1) {
 		for (int i = 0; i < symbol_table[current_scope].st_size; ++i) {
-			if (!strcmp(id, symbol_table[current_scope].token[i].name)) {
+			if (!strcmp(name, symbol_table[current_scope].token[i].name)) {
 				if (strlen(symbol_table[current_scope].token[i].value)) {
 					return strdup(symbol_table[current_scope].token[i].value);
 				}
@@ -55,17 +55,17 @@ void set_parent_scope(int current_scope, int parent_scope) {
 	symbol_table[current_scope].parent_scope = parent_scope;
 }
 
-/*int fetch_token(char *key){*/
-/*	int i, flag = -1;*/
-
-/*	for(i = 0; i < MAX; ++i){*/
-/*		if(strcmp(symbol_table.token[i].key,key)==0){*/
-/*			flag = 1;*/
-/*			return i;*/
-/*		}*/
-/*	}*/
-/*	return flag;*/
-/*}*/
+int fetch_token(char *name, int current_scope){
+	while (current_scope != -1) {
+		for (int i = 0; i < symbol_table[current_scope].st_size; ++i) {
+			if (!strcmp(name, symbol_table[current_scope].token[i].name)) {
+				return 0;
+			}
+		}
+		current_scope = symbol_table[current_scope].parent_scope;
+	}
+	return 1;
+}
 
 void show_me(){
 	int i, j;

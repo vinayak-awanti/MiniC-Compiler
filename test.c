@@ -7,7 +7,7 @@ int a = 10;
 int main() {
 /*	hello world*/
 
-	while (a < b) {
+	while (a < 2) {
 		if (2<3) {
 			int z= 20;
 			z = 30;
