@@ -90,7 +90,8 @@ varDeclaration : {
 	current_node = parent_node;
 	char decl_val[50] = {0};
 	sprintf(decl_val, "decl (%d)", current_node);
-	add_child(node_stack[--node_stack_top], current_node, decl_val);
+	parent_node = node_stack[--node_stack_top];
+	add_child(parent_node, current_node, decl_val);
 }
                ;
 varDeclList : varDeclList COMMA varDeclInitialize {sprintf($$, "%s, %s", $1, $3);}
@@ -389,16 +390,16 @@ int is_number(char *num) {
 }
 
 void add_child(int parent_node, int child_node, char val[]) {
-	printf("par_nod: %d, child_nod: %d, val: %s num_child: %d\n", parent_node, child_node, val, ast[parent_node].num_child);
+//	printf("par_nod: %d, child_nod: %d, val: %s num_child: %d\n", parent_node, child_node, val, ast[parent_node].num_child);
 	strcpy(ast[child_node].val, val);
 	ast[parent_node].child[ast[parent_node].num_child] = child_node;
 	++ast[parent_node].num_child;
 }
 
 void dfs(int cur_node) {
-	printf("node: %d val: %s num_chlid: %d\n\n", cur_node, ast[cur_node].val, ast[cur_node].num_child);
+//	printf("node: %d val: %s num_chlid: %d\n\n", cur_node, ast[cur_node].val, ast[cur_node].num_child);
 	for (int i = 0; i < ast[cur_node].num_child; ++i) {
-		fprintf(ast_file, "\"%s\" -> \"%s\";\n", ast[cur_node].val, ast[ast[cur_node].child[i]].val);
+		fprintf(ast_file, "\t\"%s\" -> \"%s\";\n", ast[cur_node].val, ast[ast[cur_node].child[i]].val);
 		dfs(ast[cur_node].child[i]);
 	}
 }
