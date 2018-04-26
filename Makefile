@@ -12,6 +12,8 @@ parsertest: yacc lex test
 test: lex.yy.c y.tab.c
 	$(COMPILER) lex.yy.c y.tab.c -ly -ll -o comp
 clean:
-	rm comp lex.yy.c y.tab.c y.tab.h 
+	rm comp lex.yy.c y.tab.c y.tab.h
 run:
 	./comp <test.c
+gen:
+	dot ast.dot -Tpng -o ast.png

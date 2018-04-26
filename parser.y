@@ -45,7 +45,8 @@ int node_stack[50];
 
 void add_child(int parent_node, int child_node, char *val);
 void dfs(int cur_node);
-
+void add_node(char *x,char *val);
+void create_space();
 %}
 
 %code requires {
@@ -241,21 +242,25 @@ iterationStmt : WHILE {
 	node_stack[node_stack_top++] = parent_node;
 	current_node = ++num_node;
 	parent_node = current_node;
-} OPEN_SIMPLE simpleExpression {func4($4.str);} CLOSE_SIMPLE statement {
+} OPEN_SIMPLE simpleExpression {
+
+	func4($4.str);
+	
+} CLOSE_SIMPLE statement {
 	func5();
 	current_node = parent_node;
 	char while_val[50] = {0};
 	sprintf(while_val, "while (%d)", current_node);
 	parent_node = node_stack[--node_stack_top];
-	add_child(parent_node, current_node, while_val);
+	add_child(parent_node, current_node, while_val);	
+
 } 
 returnStmt : RETURN SEMI_COLON
            | RETURN expression SEMI_COLON
            ;
 breakStmt : BREAK SEMI_COLON
           ;
-expression : mutable EQUAL expression {
-	
+expression : mutable  EQUAL expression {
 	fprintf(ic_file, "%s %s %s\n", $1.str, $2, $3.str);
 	
 	if (is_number($3.str)) {
@@ -299,7 +304,11 @@ expression : mutable EQUAL expression {
 }
            | simpleExpression					{$$.str = $1.str;}
            ;
-simpleExpression : simpleExpression LOGIC_OR andExpression	{$$.str = new_temp(); fprintf(ic_file, "%s = %s %s %s\n", $$.str, $1.str, $2, $3.str);}
+simpleExpression : simpleExpression LOGIC_OR andExpression	{
+				$$.str = new_temp();
+				fprintf(ic_file, "%s = %s %s %s\n", $$.str, $1.str, $2, $3.str);
+
+}
                  | andExpression							{$$.str = $1.str;}
                  ;
 andExpression : andExpression LOGIC_AND unaryRelExpression	{$$.str = new_temp(); fprintf(ic_file, "%s = %s %s %s\n", $$.str, $1.str, $2, $3.str);}
@@ -308,15 +317,110 @@ andExpression : andExpression LOGIC_AND unaryRelExpression	{$$.str = new_temp();
 unaryRelExpression : NOT unaryRelExpression			{$$.str = new_temp(); fprintf(ic_file, "%s = %s %s\n", $$.str, $1, $2.str);}
                    | relExpression					{$$.str = $1.str;}
                    ;
-relExpression : sumExpression relop sumExpression	{$$.str = new_temp(); fprintf(ic_file, "%s = %s %s %s\n", $$.str, $1.str, $2, $3.str);}
+relExpression : sumExpression {create_space();} relop {} sumExpression	{
+	
+	$$.str = new_temp();
+	fprintf(ic_file, "%s = %s %s %s\n", $$.str, $1.str, $3, $5.str);
+/*	node_stack[node_stack_top++] = parent_node;
+	current_node = ++num_node;
+	parent_node = current_node;
+
+	current_node = parent_node;
+	char cond_val[50] = {0};
+	sprintf(cond_val, "op = (==)" );
+	printf("STTOP %d\n",node_stack_top);
+	--node_stack_top;
+	parent_node = node_stack[--node_stack_top];
+
+	add_child(parent_node, current_node, cond_val);
+
+
+*/
+
+	}
               | sumExpression						{$$.str = $1.str;}
               ;
-relop : LESS_EQUAL
-      | LESS
-      | GREAT
-      | GREAT_EQUAL
-      | EQUAL_EQUAL
-      | NOT_EQUAL
+relop : LESS_EQUAL 
+{
+     
+	current_node = parent_node;
+	char cond_val[50] = {0};
+	sprintf(cond_val, "op = (<=)" );
+
+	parent_node = node_stack[node_stack_top--];
+	add_child(parent_node, current_node, cond_val);
+    //create_space();
+    //create_space();
+
+	
+}
+      | LESS {
+     
+	current_node = parent_node;
+	char cond_val[50] = {0};
+	sprintf(cond_val, "op = (<)" );
+	parent_node = node_stack[node_stack_top-1];
+	add_child(parent_node, current_node, cond_val);
+
+    //create_space();
+    //create_space();
+
+	
+}
+      | GREAT {
+     
+	current_node = parent_node;
+	char cond_val[50] = {0};
+	sprintf(cond_val, "op = (>)" );
+	parent_node = node_stack[--node_stack_top];
+	add_child(parent_node, current_node, cond_val);
+        //create_space();
+    //create_space();
+
+	
+}
+      | GREAT_EQUAL {
+      
+     
+	current_node = parent_node;
+	char cond_val[50] = {0};
+	sprintf(cond_val, "op = (<=)" );
+	parent_node = node_stack[--node_stack_top];
+	add_child(parent_node, current_node, cond_val);
+        //create_space();
+    //create_space();
+
+	
+
+      }
+      | EQUAL_EQUAL {
+      {
+     
+	current_node = parent_node;
+	char cond_val[50] = {0};
+	sprintf(cond_val, "op = (==)" );
+	parent_node = node_stack[--node_stack_top];
+	add_child(parent_node, current_node, cond_val);
+        //create_space();
+    //create_space();
+
+	
+}
+      }
+      | NOT_EQUAL {
+      {
+     
+	current_node = parent_node;
+	char cond_val[50] = {0};
+	sprintf(cond_val, "op = (!=)" );
+	parent_node = node_stack[--node_stack_top];
+	add_child(parent_node, current_node, cond_val);
+        //create_space();
+    //create_space();
+
+	
+}
+      }
       ;
 sumExpression : sumExpression sumop term	{$$.str = new_temp(); fprintf(ic_file, "%s = %s %s %s\n", $$.str, $1.str, $2, $3.str);}
               | term						{$$.str = $1.str;}
@@ -455,4 +559,18 @@ void dfs(int cur_node) {
 		fprintf(ast_file, "\t\"%s\" -> \"%s\";\n", ast[cur_node].val, ast[ast[cur_node].child[i]].val);
 		dfs(ast[cur_node].child[i]);
 	}
+}
+
+void create_space(){
+	node_stack[node_stack_top++] = parent_node;
+	current_node = ++num_node;
+	parent_node = current_node;
+}
+void add_node(char *x,char *val){
+	 
+	current_node = parent_node;
+	char cond_val[50] = {0};
+	sprintf(cond_val, "%s %s",x,val);
+	parent_node = node_stack[--node_stack_top];
+	add_child(parent_node, current_node, cond_val);
 }
