@@ -401,7 +401,7 @@ $$.str = new_temp();
 fprintf(ic_file, "%s = %s%s\n", $$.str, $2, $3.str);
 
 add_node(" ",$3.str);
-add_node("op=",$2);
+add_node("op",$2);
 }
                 | factor					{$$.str = $1;}
                 ;
@@ -538,7 +538,7 @@ void add_node(char *x,char *val){
 	 
 	current_node = parent_node;
 	char cond_val[50] = {0};
-	sprintf(cond_val, "%s %s",x,val);
+	sprintf(cond_val, "%s (%d) %s",x,current_node,val);
 	parent_node = node_stack[--node_stack_top];
 	add_child(parent_node, current_node, cond_val);
 
