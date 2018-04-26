@@ -128,6 +128,10 @@ varDeclId : ID {
 		yyerror(buf);
 		YYABORT;
 	}
+	memset(ast_value, 0, sizeof(ast_value));
+	current_node = ++num_node;
+	sprintf(ast_value, "%s %s (%d)", type, $1, current_node);
+	add_child(parent_node, current_node, ast_value);
 	sprintf($$.str, "%s%s%s%s", $1, $2, $3, $4);
 }
           | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE OPEN_SQUARE NUMCONST CLOSE_SQUARE {
@@ -138,6 +142,10 @@ varDeclId : ID {
 		yyerror(buf);
 		YYABORT;
 	}
+	memset(ast_value, 0, sizeof(ast_value));
+	current_node = ++num_node;
+	sprintf(ast_value, "%s %s (%d)", type, $1, current_node);
+	add_child(parent_node, current_node, ast_value);
 	sprintf($$.str, "%s%s%s%s%s%s%s", $1, $2, $3, $4, $5, $6, $7);
 }	
           | STAR ID {
@@ -149,6 +157,10 @@ varDeclId : ID {
 		YYABORT;
 	}
 	sprintf($$.str, "%s%s", $1, $2);
+	memset(ast_value, 0, sizeof(ast_value));
+	current_node = ++num_node;
+	sprintf(ast_value, "%s %s (%d)", type, $2, current_node);
+	add_child(parent_node, current_node, ast_value);
 }
           ;
 typeSpecifier : INT
@@ -166,13 +178,27 @@ statement : declStmt
           | scanfStmt
           ;
 compoundStmt : OPEN_FLOWER {
+			// maintaining scope
 			parent_scope = scope_stack[scope_stack_top - 1];
 			scope_stack[scope_stack_top++] = ++num_scope;
 			current_scope = num_scope;
 			set_parent_scope(current_scope, parent_scope);
+			
+			// maintaining ast nodes
+			node_stack[node_stack_top++] = parent_node;
+			current_node = ++num_node;
+			parent_node = current_node;
 		} statementList CLOSE_FLOWER {
+			// maintaining scope
 			current_scope = parent_scope;
 			--scope_stack_top;
+			
+			// maintaining ast nodes
+			current_node = parent_node;
+			char stmt_val[50] = {0};
+			sprintf(stmt_val, "stmt_list (%d)", current_node);
+			parent_node = node_stack[--node_stack_top];
+			add_child(parent_node, current_node, stmt_val);
 		}
              ;
 statementList : statementList statement
@@ -190,7 +216,11 @@ args : argList
 argList : argList COMMA expression
         | expression
         ;
-expressionStmt : expression SEMI_COLON
+expressionStmt : {
+	
+} expression {
+
+} SEMI_COLON
                | SEMI_COLON
                ;
 selectionStmt : IF OPEN_SIMPLE simpleExpression {func1($3.str);} CLOSE_SIMPLE statement {func2($<str>6);} ELSE statement {func3($<str>9);}
@@ -302,7 +332,7 @@ mutable : ID {
 }
         ;
 immutable : OPEN_SIMPLE expression CLOSE_SIMPLE	{$$.str = strdup($2.str);}
-          | constant							{$$.str = strdup($1);}				
+          | constant				{$$.str = strdup($1);}				
           ;
 constant : NUMCONST
          | CHARCONST
