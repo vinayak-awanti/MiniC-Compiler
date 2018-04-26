@@ -347,6 +347,7 @@ void yyerror(const char *error_msg) {
 }
 
 int main() {
+	system("figlet MiniC-Compiler");
 	set_parent_scope(0, -1);
 	ic_file = fopen("ic", "w");
 	if (!yyparse()) {
