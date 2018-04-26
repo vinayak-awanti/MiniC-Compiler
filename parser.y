@@ -317,26 +317,11 @@ andExpression : andExpression LOGIC_AND unaryRelExpression	{$$.str = new_temp();
 unaryRelExpression : NOT unaryRelExpression			{$$.str = new_temp(); fprintf(ic_file, "%s = %s %s\n", $$.str, $1, $2.str);}
                    | relExpression					{$$.str = $1.str;}
                    ;
-relExpression : sumExpression {create_space();} relop {} sumExpression	{
+relExpression : sumExpression {create_space();create_space();} relop {} sumExpression	{
 	
 	$$.str = new_temp();
 	fprintf(ic_file, "%s = %s %s %s\n", $$.str, $1.str, $3, $5.str);
-/*	node_stack[node_stack_top++] = parent_node;
-	current_node = ++num_node;
-	parent_node = current_node;
-
-	current_node = parent_node;
-	char cond_val[50] = {0};
-	sprintf(cond_val, "op = (==)" );
-	printf("STTOP %d\n",node_stack_top);
-	--node_stack_top;
-	parent_node = node_stack[--node_stack_top];
-
-	add_child(parent_node, current_node, cond_val);
-
-
-*/
-
+	add_node("","shaa");
 	}
               | sumExpression						{$$.str = $1.str;}
               ;
@@ -359,7 +344,7 @@ relop : LESS_EQUAL
 	current_node = parent_node;
 	char cond_val[50] = {0};
 	sprintf(cond_val, "op = (<)" );
-	parent_node = node_stack[node_stack_top-1];
+	parent_node = node_stack[node_stack_top--];
 	add_child(parent_node, current_node, cond_val);
 
     //create_space();
