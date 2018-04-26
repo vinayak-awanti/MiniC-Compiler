@@ -218,14 +218,37 @@ argList : argList COMMA expression
         ;
 expressionStmt : {
 	
-} expression {
+} 	expression {
 
-} SEMI_COLON
+} 	SEMI_COLON
                | SEMI_COLON
                ;
-selectionStmt : IF OPEN_SIMPLE simpleExpression {func1($3.str);} CLOSE_SIMPLE statement {func2($<str>6);} ELSE statement {func3($<str>9);}
+selectionStmt : {
+	node_stack[node_stack_top++] = parent_node;
+	current_node = ++num_node;
+	parent_node = current_node;
+} IF OPEN_SIMPLE simpleExpression {func1($4.str);} CLOSE_SIMPLE statement {func2($<str>7);} ELSE statement {
+	current_node = parent_node;
+	char if_val[50] = {0};
+	sprintf(if_val, "branch (%d)", current_node);
+	parent_node = node_stack[--node_stack_top];
+	add_child(parent_node, current_node, if_val);
+	func3($<str>10);
+}
               ;
-iterationStmt : WHILE {fprintf(ic_file, "L%d:\n",label_num+1);} OPEN_SIMPLE simpleExpression {func4($4.str);} CLOSE_SIMPLE statement {func5();} 
+iterationStmt : WHILE {
+	fprintf(ic_file, "L%d:\n",label_num + 1);
+	node_stack[node_stack_top++] = parent_node;
+	current_node = ++num_node;
+	parent_node = current_node;
+} OPEN_SIMPLE simpleExpression {func4($4.str);} CLOSE_SIMPLE statement {
+	func5();
+	current_node = parent_node;
+	char while_val[50] = {0};
+	sprintf(while_val, "while (%d)", current_node);
+	parent_node = node_stack[--node_stack_top];
+	add_child(parent_node, current_node, while_val);
+} 
 returnStmt : RETURN SEMI_COLON
            | RETURN expression SEMI_COLON
            ;
