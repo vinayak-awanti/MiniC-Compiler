@@ -23,7 +23,7 @@ int main() {
 	
 	
 
-	int arr[10], barr[10][10];
+	int arr[10], barr[10][10], carr[10][10][10];
 	{
 		int *p, a, *ptr;
 	}
