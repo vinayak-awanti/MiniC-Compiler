@@ -321,106 +321,88 @@ relExpression : sumExpression {create_space();create_space();} relop {} sumExpre
 	
 	$$.str = new_temp();
 	fprintf(ic_file, "%s = %s %s %s\n", $$.str, $1.str, $3, $5.str);
-	add_node("","shaa");
+	//printf("1");
+	add_node(" ",$1.str);create_space();
+	add_node(" ",$5.str);
+add_node(" ",$3);
+	
+	
 	}
               | sumExpression						{$$.str = $1.str;}
               ;
 relop : LESS_EQUAL 
 {
      
-	current_node = parent_node;
-	char cond_val[50] = {0};
-	sprintf(cond_val, "op = (<=)" );
-
-	parent_node = node_stack[node_stack_top--];
-	add_child(parent_node, current_node, cond_val);
-    //create_space();
-    //create_space();
-
+	
 	
 }
       | LESS {
-     
-	current_node = parent_node;
-	char cond_val[50] = {0};
-	sprintf(cond_val, "op = (<)" );
-	parent_node = node_stack[node_stack_top--];
-	add_child(parent_node, current_node, cond_val);
-
-    //create_space();
-    //create_space();
-
+    
+    printf("Less %d",current_node);
+	
+	
+    
+    
 	
 }
       | GREAT {
      
-	current_node = parent_node;
-	char cond_val[50] = {0};
-	sprintf(cond_val, "op = (>)" );
-	parent_node = node_stack[--node_stack_top];
-	add_child(parent_node, current_node, cond_val);
-        //create_space();
-    //create_space();
-
+	
 	
 }
       | GREAT_EQUAL {
       
-     
-	current_node = parent_node;
-	char cond_val[50] = {0};
-	sprintf(cond_val, "op = (<=)" );
-	parent_node = node_stack[--node_stack_top];
-	add_child(parent_node, current_node, cond_val);
-        //create_space();
-    //create_space();
-
+    
 	
 
       }
       | EQUAL_EQUAL {
       {
      
-	current_node = parent_node;
-	char cond_val[50] = {0};
-	sprintf(cond_val, "op = (==)" );
-	parent_node = node_stack[--node_stack_top];
-	add_child(parent_node, current_node, cond_val);
-        //create_space();
-    //create_space();
-
+	
 	
 }
       }
       | NOT_EQUAL {
       {
      
-	current_node = parent_node;
-	char cond_val[50] = {0};
-	sprintf(cond_val, "op = (!=)" );
-	parent_node = node_stack[--node_stack_top];
-	add_child(parent_node, current_node, cond_val);
-        //create_space();
-    //create_space();
-
+	
 	
 }
       }
       ;
-sumExpression : sumExpression sumop term	{$$.str = new_temp(); fprintf(ic_file, "%s = %s %s %s\n", $$.str, $1.str, $2, $3.str);}
+sumExpression : sumExpression{create_space();create_space();} sumop term	{
+				$$.str = new_temp();
+				fprintf(ic_file, "%s = %s %s %s\n", $$.str, $1.str, $3, $4.str);
+				add_node(" ",$1.str);create_space();
+				add_node(" ",$4.str);
+				add_node(" ",$3);
+				}
               | term						{$$.str = $1.str;}
               ;
 sumop : PLUS
       | MINUS
       ;
-term : term mulop unaryExpression			{$$.str = new_temp(); fprintf(ic_file, "%s = %s %s %s\n", $$.str, $1.str, $2, $3.str);}
+term : term {create_space();create_space();} mulop unaryExpression {
+$$.str = new_temp();
+fprintf(ic_file, "%s = %s %s %s\n", $$.str, $1.str, $3, $4.str);
+add_node(" ",$1.str);create_space();
+add_node(" ",$4.str);
+add_node(" ",$3);
+}
      | unaryExpression						{$$.str = $1.str;}
      ;
 mulop : STAR
       | DIV
       | MOD
       ;
-unaryExpression : unaryop unaryExpression	{$$.str = new_temp(); fprintf(ic_file, "%s = %s%s\n", $$.str, $1, $2.str);}
+unaryExpression : { create_space();create_space();} unaryop unaryExpression	{
+$$.str = new_temp(); 
+fprintf(ic_file, "%s = %s%s\n", $$.str, $2, $3.str);
+
+add_node(" ",$3.str);
+add_node("op=",$2);
+}
                 | factor					{$$.str = $1;}
                 ;
 unaryop : MINUS
@@ -550,6 +532,7 @@ void create_space(){
 	node_stack[node_stack_top++] = parent_node;
 	current_node = ++num_node;
 	parent_node = current_node;
+	
 }
 void add_node(char *x,char *val){
 	 
@@ -558,4 +541,5 @@ void add_node(char *x,char *val){
 	sprintf(cond_val, "%s %s",x,val);
 	parent_node = node_stack[--node_stack_top];
 	add_child(parent_node, current_node, cond_val);
+
 }
