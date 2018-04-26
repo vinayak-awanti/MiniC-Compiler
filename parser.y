@@ -5,10 +5,12 @@
 void yyerror(const char *error_msg);
 int yylex();
 
-void func4();
 void func1(char *s);
 void func2(char *s);
 void func3(char *s);
+void func4(char *s);
+void func5();
+
 int labels[20];
 int label_num = 0;
 int label_top = 0;
@@ -23,19 +25,33 @@ static int temp_nb;
 char* new_temp();
 int is_number(char *num);
 
-FILE *ic_file;
+FILE *ic_file, *ast_file;
+
+// ast
+typedef struct {
+	char val[50];
+	int num_child;
+	int child[50];
+} ast_node_t;
+
+ast_node_t ast[500];
+char ast_value[50];
+
+int num_node = 0;
+int current_node = 1;
+int parent_node = 0;
+int node_stack_top = 0;
+int node_stack[50];
+
+void add_child(int parent_node, int child_node, char *val);
+void dfs(int cur_node);
+
 %}
 
 %code requires {
 	typedef struct {
-		char *val;
-		struct node_t *child[10];
-	} node_t;
-
-	typedef struct {
 		char *str;
 		char *addr;
-		node_t *ptr;
 	} attrib_t;
 }
 
@@ -65,7 +81,17 @@ headerDeclaration : INCLUDE
                   ;
 mainDeclaration : INT_MAIN statement
                 ;
-varDeclaration : typeSpecifier varDeclList SEMI_COLON {fprintf(ic_file, "%s %s \n", $1, $2);}
+varDeclaration : {
+	node_stack[node_stack_top++] = parent_node;
+	current_node = ++num_node;
+	parent_node = current_node;
+} typeSpecifier varDeclList SEMI_COLON {
+	fprintf(ic_file, "%s %s \n", $2, $3);
+	current_node = parent_node;
+	char decl_val[50] = {0};
+	sprintf(decl_val, "decl (%d)", current_node);
+	add_child(node_stack[--node_stack_top], current_node, decl_val);
+}
                ;
 varDeclList : varDeclList COMMA varDeclInitialize {sprintf($$, "%s, %s", $1, $3);}
             | varDeclInitialize {sprintf($$, "%s", $1);}
@@ -80,12 +106,18 @@ varDeclInitialize : varDeclId {
  	sprintf($$, "%s = %s", $1.str, $3.str);
 }
                   ;
-varDeclId : ID	{
-	if(load_token($1, (strcmp($<str>0, ",") ? $<str>0 : $<str>-2), line_no, current_scope)) {
+varDeclId : ID {
+	char type[20] = {0};
+	sprintf(type, "%s", (strcmp($<str>0, ",") ? $<str>0 : $<str>-2));
+	if(load_token($1, type, line_no, current_scope)) {
 		char buf[50]; sprintf(buf, "redeclaration of %s", $1);
 		yyerror(buf);
 		YYABORT;
 	}
+	memset(ast_value, 0, sizeof(ast_value));
+	current_node = ++num_node;
+	sprintf(ast_value, "%s %s (%d)", type, $1, current_node);
+	add_child(parent_node, current_node, ast_value);
 }
           | ID OPEN_SQUARE NUMCONST CLOSE_SQUARE {
 	char type[20] = {0};
@@ -123,10 +155,10 @@ typeSpecifier : INT
               | CHAR
               ;
 statement : declStmt
-          | expressionStmt
+          | expressionStmt	{}
           | compoundStmt
-          | selectionStmt
-          | iterationStmt
+          | selectionStmt	{}
+          | iterationStmt	{}
           | returnStmt
           | breakStmt
           | printfStmt
@@ -160,9 +192,9 @@ argList : argList COMMA expression
 expressionStmt : expression SEMI_COLON
                | SEMI_COLON
                ;
-selectionStmt : IF OPEN_SIMPLE simpleExpression {$3.str = new_temp(); func1($3.str);} CLOSE_SIMPLE statement {func2($<str>6);} ELSE statement {func3($<str>9);}
+selectionStmt : IF OPEN_SIMPLE simpleExpression {func1($3.str);} CLOSE_SIMPLE statement {func2($<str>6);} ELSE statement {func3($<str>9);}
               ;
-iterationStmt : WHILE {fprintf(ic_file, "L%d:\n",label_num);label_num+=1;} OPEN_SIMPLE simpleExpression {func1($4.str);} CLOSE_SIMPLE statement {func4();func3($<str>6);} 
+iterationStmt : WHILE {fprintf(ic_file, "L%d:\n",label_num+1);} OPEN_SIMPLE simpleExpression {func4($4.str);} CLOSE_SIMPLE statement {func5();} 
 returnStmt : RETURN SEMI_COLON
            | RETURN expression SEMI_COLON
            ;
@@ -293,7 +325,8 @@ void yyerror(const char *error_msg) {
 int main() {
 	set_parent_scope(0, -1);
 	ic_file = fopen("ic", "w");
-	
+	ast_file = fopen("ast.dot", "w");
+	fprintf(ast_file, "digraph ast {\n");
 	if (!yyparse()) {
 		printf("\n\nClean code after removing comments :-> \n");
 		printf("**********************************************\n");
@@ -305,7 +338,10 @@ int main() {
 	} else {
 		printf("unsuccessful\n");
 	}
+	dfs(0);
+	fprintf(ast_file, "}\n");
 	fclose(ic_file);
+	fclose(ast_file);
 	return 0;
 }
 
@@ -327,15 +363,42 @@ void func2( char *s ) {
 }
 
 void func3( char *s) {
-	int y = labels[label_top--];
+	int y = labels[label_top];
+	label_top--;
 	fprintf(ic_file, "L%d: \n",y); 
 }
 
-void func4(){
-	int y=labels[label_top-1];
-	fprintf(ic_file, "goto L%d\n",y);
+void func4(char *s){
+	char * temp = new_temp();
+	fprintf(ic_file, "%s = not %s\n", temp, s);
+	fprintf(ic_file, "if %s goto L%d\n", temp, label_num + 2);
+	labels[++label_top] = label_num + 2;
+	labels[++label_top] = label_num + 1;
+	label_num += 2;
+}
+
+void func5() {
+	fprintf(ic_file, "goto L%d\n", labels[label_top]);
+	label_top--;
+	fprintf(ic_file, "L%d:\n", labels[label_top]);
+	label_top--;
 }
 
 int is_number(char *num) {
 	return (strcmp("0", num) == 0 || atoi(num));
+}
+
+void add_child(int parent_node, int child_node, char val[]) {
+	printf("par_nod: %d, child_nod: %d, val: %s num_child: %d\n", parent_node, child_node, val, ast[parent_node].num_child);
+	strcpy(ast[child_node].val, val);
+	ast[parent_node].child[ast[parent_node].num_child] = child_node;
+	++ast[parent_node].num_child;
+}
+
+void dfs(int cur_node) {
+	printf("node: %d val: %s num_chlid: %d\n\n", cur_node, ast[cur_node].val, ast[cur_node].num_child);
+	for (int i = 0; i < ast[cur_node].num_child; ++i) {
+		fprintf(ast_file, "\"%s\" -> \"%s\";\n", ast[cur_node].val, ast[ast[cur_node].child[i]].val);
+		dfs(ast[cur_node].child[i]);
+	}
 }

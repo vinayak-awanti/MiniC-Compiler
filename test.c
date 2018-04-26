@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-int a = 10;
+int a = 10, b = 20;
 
 /*this is a test program*/
 
@@ -23,7 +23,7 @@ int main() {
 	
 	
 
-	int arr[10], barr[10][10], carr[10][10][10];
+	int arr[10], barr[10][10], carr[10][10];
 	{
 		int *p, a, *ptr;
 	}
