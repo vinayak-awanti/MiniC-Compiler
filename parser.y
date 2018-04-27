@@ -1,15 +1,16 @@
 %{
 
 #include <stdio.h>
+#include <stdlib.h>	
 #include "st.h"
 void yyerror(const char *error_msg);
 int yylex();
 
+void func4(char *s);
+void func5();
 void func1(char *s);
 void func2(char *s);
 void func3(char *s);
-void func4(char *s);
-void func5();
 
 int labels[20];
 int label_num = 0;
@@ -448,6 +449,7 @@ void yyerror(const char *error_msg) {
 }
 
 int main() {
+	system("figlet MiniC-Compiler");
 	set_parent_scope(0, -1);
 	ic_file = fopen("ic", "w");
 	ast_file = fopen("ast.dot", "w");
@@ -460,12 +462,29 @@ int main() {
 		printf("Symbol Table :->\n\n");
 		show_me();
 		printf("successful\n");
+		fclose(ic_file);
+		printf("**********************************************\n\n");
+		printf("Intermediate code :->\n\n");
+		system("cat ic");
+		system("python3 optmz.py");
+		printf("**********************************************\n\n");
+		printf("Constant Folded code :->\n\n");
+		system("cat folding.txt");
+		printf("**********************************************\n\n");
+		printf("Constant propagated code :->\n\n");
+		system("cat propagation.txt");
+		printf("**********************************************\n\n");
+		printf("Final optimized code :->\n\n");
+		system("cat final.txt");
+		printf("**********************************************\n\n");
+		printf("successful\n");
 	} else {
+		fclose(ic_file);
 		printf("unsuccessful\n");
 	}
 	dfs(0);
 	fprintf(ast_file, "}\n");
-	fclose(ic_file);
+	
 	fclose(ast_file);
 	return 0;
 }

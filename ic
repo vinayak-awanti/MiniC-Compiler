@@ -1,9 +1,35 @@
+int a = 10, b = 20 
+int a, b 
+t0 = 34 * 2
+t1 = t0 - 4
+a = t1
+b = a
 int i = 0 
+int arr[10], barr[10][10], carr[10][10] 
+int *p, a, *ptr 
 L1:
-t0 = i < 5
-t1 = not t0
-if t1 goto L2
-t2 = i + 8
-i = t2
+t2 = a < 2
+t3 = not t2
+if t3 goto L2
+L3:
+t4 = b < 2
+t5 = not t4
+if t5 goto L4
+t6 = i + 1
+i = t6
+goto L3
+L4:
 goto L1
 L2:
+t7 = 1 < 2
+t8 = not t7
+if t8 goto L5
+int inif = 0 
+goto L6
+L5: 
+int inelse = 0 
+L6: 
+t9 = a / 10
+a = t9
+t10 = a - 1
+a = t10
